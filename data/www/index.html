@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="/bs.min.css" rel="stylesheet" />
+    <link href="/fn.editor.css" rel="stylesheet" />
+    <title>T3-EX-WiFi</title>
+    <style>
+      .loading:before {
+        content: '';
+        height: 64px;
+        background-image: url(/loading.gif);
+        background-repeat: no-repeat;
+        background-position: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container py-3" id="app">
+      <div class="nav nav-tabs justify-content-center mb-3">
+        <button type="button" class="nav-link" :class="{ active: tab === 1, disabled: locked }" @click="tab = 1">
+          Locos
+        </button>
+        <button type="button" class="nav-link" :class="{ active: tab === 2, disabled: locked }" @click="tab = 2">
+          Functions
+        </button>
+        <button type="button" class="nav-link" :class="{ active: tab === 3, disabled: locked }" @click="tab = 3">
+          Groups
+        </button>
+        <button type="button" class="nav-link" :class="{ active: tab === 4, disabled: locked }" @click="tab = 4">
+          Icons
+        </button>
+        <button type="button" class="nav-link" :class="{ active: tab === 5, disabled: locked }" @click="tab = 5">
+          CS <span class="badge bg-warning" :class="{ 'd-none': cs }">!</span>
+        </button>
+      </div>
+      <div class="tab-content">
+        <div class="tab-pane fade" :class="{ 'show active': tab === 1 }">
+          <Locos :active="tab == 1" />
+        </div>
+        <div class="tab-pane fade" :class="{ 'show active': tab === 2 }">
+          <Functions :active="tab == 2" />
+        </div>
+        <div class="tab-pane fade" :class="{ 'show active': tab === 3 }">
+          <Groups :active="tab == 3" @lock="locked = true" @unlock="locked = false" />
+        </div>
+        <div class="tab-pane fade" :class="{ 'show active': tab === 4 }">
+          <Icons :active="tab == 4" />
+        </div>
+        <div class="tab-pane fade" :class="{ 'show active': tab === 5 }">
+          <Settings :active="tab == 5" @lock="locked = true" @unlock="valid => { locked = false; if (valid === true) { cs = true; } }" />
+        </div>
+      </div>
+    </div>
+    <script src="/vue.global.prod.js"></script>
+    <script type="module">
+      import Locos from './locos.js';
+      import Functions from './functions.js';
+      import Groups from './groups.js';
+      import Icons from './icons.js';
+      import Settings from './settings.js';
+
+      const app = Vue.createApp({
+        components: {
+          Locos,
+          Functions,
+          Groups,
+          Icons,
+          Settings,
+        },
+        data() {
+          return {
+            tab: 1,
+            locked: false,
+            cs: true,
+          }
+        },
+        async mounted() {
+          // Check if the WiFi connection to the CS needs setting up
+          const response = await fetch('/cs', { method: 'HEAD' });
+          if (response.status === 404) {
+            this.cs = false;
+          }
+        },
+      });
+      app.mount('#app');
+    </script>
+  </body>
+</html>
