@@ -1,0 +1,134 @@
+.color-picker {
+  display: inline-block;
+  width: 28px;
+  height: 28px;
+  padding: 2px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+.color-picker::before {
+  content: '';
+  display: block;
+  width: 22px;
+  height: 22px;
+  background: var(--rgb, #000);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.fn-icons {
+  position: relative;
+  display: block;
+  height: 66px;
+}
+.fn-icons > div {
+  left: 0;
+  right: 0;
+  height: 68px;
+  white-space: nowrap;
+  overflow-x: scroll;
+}
+.fn-icons img {
+  pointer-events: none;
+}
+
+.fn-button button {
+  height: 42px;
+}
+.fn-button button * {
+  pointer-events: none;
+}
+.fn-button button span {
+  font-size: 18px;
+}
+.fn-button button img:not([src]) {
+  display: none;
+}
+.fn-button > div > div:first-child div {
+  position: absolute;
+  top: -5px;
+  left: calc(50% - 5px);
+  width: 10px;
+  height: 10px;
+  background: #fff;
+  transform: rotate(45deg);
+}
+.fn-button svg {
+  cursor: pointer;
+}
+.fn-button .preview {
+  position: absolute;
+  right: -40px;
+  top: calc(50% - 16px);
+  width: 32px;
+  height: 32px;
+  padding: 2px;
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+  background: #ddd;
+  cursor: pointer;
+}
+
+.fn-grid {
+  width: 300px;
+  min-height: 58px;
+  margin-left: -32px;
+  background-color: #000;
+}
+.fn-grid:empty::before {
+  content: 'No Rows, drag one in';
+  position: relative;
+  top: 14px;
+  color: #FFF;
+}
+.fn-grid > .row {
+  min-height: 42px;
+}
+/* Bit clunky but wanted to avoid using JS to show text hints */
+.fn-grid > .row:empty::before {
+  content: 'Empty row, drag a button in';
+  position: relative;
+  top: 6px;
+  width: 100%;
+  color: #fff;
+}
+.fn-grid > .row:is(:nth-child(8):not(:last-child), :nth-child(7n+15))::before {
+  content: 'Page Break';
+  width: 100%;
+  margin-bottom: 10px;
+  background: linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 30%, rgba(0,0,0,1) 35%, rgba(0,0,0,1) 65%, rgba(255,255,255,1) 70%, rgba(255,255,255,1) 100%);
+  background-size: 100% 2px;
+  background-repeat: no-repeat;
+  background-position-y: 12px;
+  color: #fff;
+}
+.fn-grid > .row:is(:nth-child(8):not(:last-child), :nth-child(7n+15)):empty::before {
+  content: 'Page Break\00000a\00000aEmpty row, drag a button in';
+  line-height: 20px;
+  margin-top: -6px;
+  padding-top: 2px;
+  padding-bottom: 10px;
+  white-space: pre;
+}
+.fn-grid > .row::after {
+  content: '';
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  right: -40px;
+  bottom: 5px;
+  padding: 8px;
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+  background: #ddd;
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M3.646 10.146a.5.5 0 0 1 .708 0L8 13.793l3.646-3.647a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 0-.708zm0-4.292a.5.5 0 0 0 .708 0L8 2.207l3.646 3.647a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 0 0 0 .708zM1 8a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13A.5.5 0 0 1 1 8z"/></svg>');
+  background-repeat: no-repeat;
+  background-position: 7px 7px;
+  cursor: pointer;
+}
+.fn-grid > .row:last-child {
+  margin-bottom: 0 !important;
+}
+.fn-grid > .row > .col:last-child {
+  padding-right: 0;
+}
