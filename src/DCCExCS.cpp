@@ -164,9 +164,6 @@ void DCCExCS::readLocoCVByte(uint16_t cv) {
     "r12345\\|32767\\|(\\d+) (-?\\d+)",
     [this, cv](std::smatch &matches) {
       int16_t result = -1;
-      Serial.print(matches[1].str().c_str());
-      Serial.print(" ");
-      Serial.println(matches[2].str().c_str());
       if (strtoul(matches[1].str().c_str(), (char **)NULL, 10) == cv) {
         result = strtol(matches[2].str().c_str(), (char **)NULL, 10);
       }
