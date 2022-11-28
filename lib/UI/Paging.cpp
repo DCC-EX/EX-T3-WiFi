@@ -1,6 +1,6 @@
 #include <Paging.h>
 
-Paging::Paging(TFT_eSPI *tft, Tasks *tasks, uint8_t pages) : UI(tft, tasks), _pages(pages) {
+Paging::Paging(uint8_t pages) : _pages(pages) {
   _elements.reserve(3);
 
   addElement<Button>(0, 435, 102, 42, "<",
@@ -70,11 +70,12 @@ void Paging::reset() {
 }
 
 void Paging::update() {
-  char label[6];
-  sprintf(label, "%d\\%d", _page, _pages);
+  String label(_page);
+  label += '\\';
+  label += _pages;
   static_cast<Button*>(_elements[1].get())->setLabel(label);
 
-  dispatchEvent(static_cast<uint8_t>(Event::CHANGED));
+  dispatchEvent(static_cast<uint8_t>(Event::CHANGED), &_page);
 }
 
 void Paging::encoderRotate(Encoder::Rotation rotation) {

@@ -1,12 +1,11 @@
 #include <Keypad.h>
 
-Keypad::Keypad(TFT_eSPI *tft, Tasks *tasks, const char *label, uint16_t max, uint16_t min)
-    : UI(tft, tasks), _maxValue(max), _minValue(min) {
+Keypad::Keypad(const String& label, uint16_t max, uint16_t min, uint16_t* value) : _maxValue(max), _minValue(min) {
   _elements.reserve(17);
 
   addElement<Header>(0, 50, 320, 18, label);
 
-  _number = addElement<Input>(0, 78, 320, 30);
+  _number = addElement<Input>(0, 78, 320, 30, value == nullptr ? "" : String(*value));
 
   String range("Range ");
   range += min;
@@ -38,7 +37,7 @@ Keypad::Keypad(TFT_eSPI *tft, Tasks *tasks, const char *label, uint16_t max, uin
       TFT_WHITE,
       TFT_WHITE
     })
-    ->onRelease([this](void *parameter) {
+    ->onRelease([this](void* parameter) {
       uint32_t valid = getNumber();
       if (valid >= _minValue && valid <= _maxValue) {
         dispatchEvent(static_cast<uint8_t>(Event::ENTER), &valid);
@@ -89,6 +88,10 @@ Keypad::Keypad(TFT_eSPI *tft, Tasks *tasks, const char *label, uint16_t max, uin
     ->onTouch(std::bind(&Input::clear, _number));
 }
 
+Keypad::Keypad(const String& label, uint16_t max, uint16_t min) : Keypad(label, max, min, nullptr) { }
+
+Keypad::Keypad(const String& label, uint16_t max, uint16_t min, uint16_t value) : Keypad(label, max, min, &value) { }
+
 void Keypad::keyPress(uint8_t number) {
   if (_number->length() < MAX_DIGITS - 1) {
     _number->add(_numberLabels[number][0]);
@@ -96,5 +99,9 @@ void Keypad::keyPress(uint8_t number) {
 }
 
 uint32_t Keypad::getNumber() {
-  return _number->get().toInt();
+  return _number->getValue().toInt();
+}
+
+void Keypad::setNumber(uint32_t value) {
+  _number->setValue(String(value));
 }

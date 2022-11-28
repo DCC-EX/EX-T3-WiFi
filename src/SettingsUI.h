@@ -14,11 +14,11 @@ class SettingsUI : public UI {
     char _rotationLabels[2][9] = { "Standard", "Inverted" };
     #endif
   public:
-    SettingsUI(TFT_eSPI *tft, Tasks *tasks);
+    SettingsUI();
     ~SettingsUI();
 
-    void speedStep(void *button, SettingsClass::LocoUI::SpeedStep *speedStep);
-    void swipeAction(void *button, SettingsClass::LocoUI::Swipe::Action *gesture, uint8_t actions);
+    void speedStep(void* button, SettingsClass::LocoUI::SpeedStep* speedStep);
+    void swipeAction(void* button, SettingsClass::LocoUI::Swipe::Action* gesture, uint8_t actions);
 };
 
 #endif

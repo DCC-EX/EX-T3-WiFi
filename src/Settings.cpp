@@ -16,13 +16,13 @@ void SettingsClass::load() {
 }
 
 void SettingsClass::save() {
-  File json = SD.open("/settings.json", FILE_WRITE);
   StaticJsonDocument<2048> doc;
 
   CS.save(doc["cs"] | doc.createNestedObject("cs"));
   LocoUI.save(doc["locoui"] | doc.createNestedObject("locoui"));
   doc["rotation"] = static_cast<uint8_t>(rotation);
 
+  File json = SD.open("/settings.json", FILE_WRITE);
   serializeJson(doc, json);
   json.close();
 }
@@ -85,7 +85,7 @@ uint16_t SettingsClass::CS::port() const {
   return _port;
 }
 
-void SettingsClass::CS::port(const uint16_t &value) {
+void SettingsClass::CS::port(uint16_t value) {
   _port = value;
 }
 

@@ -1,37 +1,37 @@
 #include <UIHeader.h>
-#include <Img/BMP.h>
 
-UIHeader::UIHeader(TFT_eSPI *tft) : _tft(tft) {
-  _menu = std::make_unique<Touch>(290, 0, 30, 30);
-  _locos = std::make_unique<Label>(_tft, 180, 10, 100, 18);
-}
+UIHeader::UIHeader() {
+  _power = addElement<Image>(0, 2, 60, 30, SPIFFS);
+  _wifi = addElement<Image>(70, 0, 30, 30, SPIFFS);
+  _cs = addElement<Image>(110, 0, 30, 30, SPIFFS);
 
-void UIHeader::draw() {
+  addElement<Image>(150, 0, 30, 30, "/icons/conductor.bmp", SPIFFS);
+  _locos = addElement<Label>(180, 10, 100, 18);
+
   updatePowerStatus();
   updateWiFiStatus();
   updateCSStatus();
-
-  BMP(SPIFFS.open("/icons/conductor.bmp"), _tft, 150, 0);
   updateLocoCount();
 
-  BMP(SPIFFS.open("/icons/menu.bmp"), _tft, 290, 0);
-}
-
-bool UIHeader::menuTouch(uint16_t x, uint16_t y) {
-  return _menu->contains(x, y);
+  addElement<Button>(290, 0, 30, 30, Button::Appearance {
+    "/icons/menu.bmp",
+    SPIFFS
+  })->onRelease([this](void* parameter) {
+    dispatchEvent(static_cast<uint8_t>(Event::MENU));
+  });
 }
 
 void UIHeader::updatePowerStatus() {
   if (_powerStatus == PowerStatus::STATUS_CHARGING) { // If we can detect charging in the future
-    BMP(SPIFFS.open("/icons/battery-charging.bmp"), _tft, 0, 2);
+    _power->setImage("/icons/battery-charging.bmp");
   } else if (_powerStatus == PowerStatus::STATUS_HIGH) {
-    BMP(SPIFFS.open("/icons/battery-full.bmp"), _tft, 0, 2);
+    _power->setImage("/icons/battery-full.bmp");
   } else if (_powerStatus == PowerStatus::STATUS_MEDIUM) {
-    BMP(SPIFFS.open("/icons/battery-medium.bmp"), _tft, 0, 2);
+    _power->setImage("/icons/battery-medium.bmp");
   } else if (_powerStatus == PowerStatus::STATUS_LOW) {
-    BMP(SPIFFS.open("/icons/battery-low.bmp"), _tft, 0, 2);
+    _power->setImage("/icons/battery-low.bmp");
   } else if (_powerStatus == PowerStatus::STATUS_RECHARGE) {
-    BMP(SPIFFS.open("/icons/battery-recharge.bmp"), _tft, 0, 2);
+    _power->setImage("/icons/battery-recharge.bmp");
   }
 }
 
@@ -52,10 +52,9 @@ void UIHeader::setPowerStatus(float voltage) {
 }
 
 void UIHeader::updateWiFiStatus() {
-  BMP(SPIFFS.open(_wifiStatus
+  _wifi->setImage(_wifiStatus
       ? "/icons/wifi-connected.bmp"
-      : "/icons/wifi-disconnected.bmp")
-    , _tft, 70, 0);
+      : "/icons/wifi-disconnected.bmp");
 }
 
 void UIHeader::setWiFiStatus(bool connected) {
@@ -66,10 +65,9 @@ void UIHeader::setWiFiStatus(bool connected) {
 }
 
 void UIHeader::updateCSStatus() {
-  BMP(SPIFFS.open(_csStatus
+  _cs->setImage(_csStatus
       ? "/icons/cs-connected.bmp"
-      : "/icons/cs-disconnected.bmp")
-    , _tft, 110, 0);
+      : "/icons/cs-disconnected.bmp");
 }
 
 void UIHeader::setCSStatus(bool connected) {

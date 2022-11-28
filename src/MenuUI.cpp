@@ -2,7 +2,7 @@
 #include <Elements/Header.h>
 #include <Elements/Button.h>
 
-MenuUI::MenuUI(TFT_eSPI *tft, Tasks *tasks, DCCExCS::Power *power) : UI(tft, tasks), power(power) {
+MenuUI::MenuUI(DCCExCS::Power& power) : power(power) {
   _elements.reserve(17);
 
   addElement<Header>(0, 40, 320, 18, "Loco");
@@ -32,28 +32,28 @@ MenuUI::MenuUI(TFT_eSPI *tft, Tasks *tasks, DCCExCS::Power *power) : UI(tft, tas
 
   addElement<Header>(0, 257, 320, 18, "Power");
 
-  powerAll = addElement<Btn>(0, 287, 102, 42, "On All", "Off All", true, power->main && power->prog ? Btn::State::PRESSED : Btn::State::IDLE);
-  powerAll->onRelease([this](void *parameter) {
+  powerAll = addElement<Btn>(0, 287, 102, 42, "On All", "Off All", true, power.main && power.prog ? Btn::State::PRESSED : Btn::State::IDLE);
+  powerAll->onRelease([this](void* parameter) {
     selected(static_cast<Btn*>(parameter)->getState() == Btn::State::IDLE
       ? Button::POWER_OFF_ALL
       : Button::POWER_ON_ALL);
   });
 
-  powerMain = addElement<Btn>(109, 287, 102, 42, "On Main", "Off Main", true, power->main ? Btn::State::PRESSED : Btn::State::IDLE);
-  powerMain->onRelease([this](void *parameter) {
+  powerMain = addElement<Btn>(109, 287, 102, 42, "On Main", "Off Main", true, power.main ? Btn::State::PRESSED : Btn::State::IDLE);
+  powerMain->onRelease([this](void* parameter) {
     selected(static_cast<Btn*>(parameter)->getState() == Btn::State::IDLE
       ? Button::POWER_OFF_MAIN
       : Button::POWER_ON_MAIN);
   });
 
-  powerProg = addElement<Btn>(218, 287, 102, 42, "On Prog", "Off Prog", true, power->prog ? Btn::State::PRESSED : Btn::State::IDLE);
-  powerProg->onRelease([this](void *parameter) {
+  powerProg = addElement<Btn>(218, 287, 102, 42, "On Prog", "Off Prog", true, power.prog ? Btn::State::PRESSED : Btn::State::IDLE);
+  powerProg->onRelease([this](void* parameter) {
     selected(static_cast<Btn*>(parameter)->getState() == Btn::State::IDLE
       ? Button::POWER_OFF_PROG
       : Button::POWER_ON_PROG);
   });
 
-  powerJoin = addElement<Btn>(0, 336, 320, 42, "Join Tracks", true, power->join ? Btn::State::PRESSED : Btn::State::IDLE);
+  powerJoin = addElement<Btn>(0, 336, 320, 42, "Join Tracks", true, power.join ? Btn::State::PRESSED : Btn::State::IDLE);
   powerJoin->onRelease(std::bind(&MenuUI::selected, this, Button::POWER_JOIN));
 
   addElement<Header>(0, 390, 320, 18, "Settings");
@@ -70,8 +70,8 @@ void MenuUI::selected(MenuUI::Button button) {
 }
 
 void MenuUI::csPowerChange() {
-  powerAll->setState(power->main && power->prog ? Btn::State::PRESSED : Btn::State::IDLE);
-  powerMain->setState(power->main ? Btn::State::PRESSED : Btn::State::IDLE);
-  powerProg->setState(power->prog ? Btn::State::PRESSED : Btn::State::IDLE);
-  powerJoin->setState(power->join ? Btn::State::PRESSED : Btn::State::IDLE);
+  powerAll->setState(power.main && power.prog ? Btn::State::PRESSED : Btn::State::IDLE);
+  powerMain->setState(power.main ? Btn::State::PRESSED : Btn::State::IDLE);
+  powerProg->setState(power.prog ? Btn::State::PRESSED : Btn::State::IDLE);
+  powerJoin->setState(power.join ? Btn::State::PRESSED : Btn::State::IDLE);
 }

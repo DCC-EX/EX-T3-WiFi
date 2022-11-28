@@ -19,7 +19,7 @@ class Paging : public UI, public Events {
       CHANGED
     };
 
-    Paging(TFT_eSPI *tft, Tasks *tasks, uint8_t pages);
+    Paging(uint8_t pages);
     
     void encoderRotate(Encoder::Rotation rotation);
     uint8_t getPage();

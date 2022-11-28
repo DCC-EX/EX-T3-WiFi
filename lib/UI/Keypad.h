@@ -13,9 +13,11 @@ class Keypad : public UI, public Events {
 
     uint16_t _maxValue;
     uint16_t _minValue;
-    Input *_number;
+    Input* _number;
 
     const char _numberLabels[10][2] = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
+
+    Keypad(const String& label, uint16_t max, uint16_t min, uint16_t* value);
 
     void keyPress(uint8_t number);
   public:
@@ -24,9 +26,11 @@ class Keypad : public UI, public Events {
       ENTER
     };
 
-    Keypad(TFT_eSPI *tft, Tasks *tasks, const char *label, uint16_t max, uint16_t min = 0);
+    Keypad(const String& label, uint16_t max, uint16_t min = 0);
+    Keypad(const String& label, uint16_t max, uint16_t min, uint16_t value);
     
     uint32_t getNumber();
+    void setNumber(uint32_t value);
 };
 
 #endif

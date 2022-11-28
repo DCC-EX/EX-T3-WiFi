@@ -32,14 +32,14 @@ const uint8_t ENCODER_BTN = A3;
 const uint8_t ENCODER_B = A1;
 const uint8_t ENCODER_A = A0;
 
-TFT_eSPI tft = TFT_eSPI();
-GT911 ts = GT911();
+TFT_eSPI tft;
+GT911 ts;
 #if defined(USE_ACCELEROMETER)
 DFRobot_LIS2DW12_I2C acce;
 DFRobot_LIS2DW12::eOrient_t lastOrientation = DFRobot_LIS2DW12::eOrient_t::eYDown;
 #endif
 
-Encoder *encoder;
+Encoder* encoder;
 uint32_t encoderPressMillis = 0;
 UI::Encoder::ButtonState encoderBtnState = UI::Encoder::ButtonState::IDLE;
 uint8_t currentEncoderPinState, lastEncoderPinState;
@@ -47,27 +47,20 @@ uint8_t currentEncoderPinState, lastEncoderPinState;
 AsyncClient csClient;
 uint8_t csBuffer[1024];
 uint16_t csBufferLen = 0;
-DCCExCS dccExCS(&csClient);
+DCCExCS dccExCS(csClient);
 DCCExCS::Power power;
 Locos locos;
 
+std::unique_ptr<UIHeader> uiHeader;
 std::unique_ptr<UI> activeUI;
-UIHeader uiHeader(&tft);
-
-UI::Tasks tasks;
 
 void setMenuUI();
 void setLocoUI();
 
-template <class T, typename... Args>
-auto makeUI(Args&&... args) {
-  return std::make_unique<T>(&tft, &tasks, std::forward<Args>(args)...);
-}
-
 template <typename T>
 void setUI(T&& ui) {
-  tft.fillRect(0, 30, 320, 450, TFT_BLACK);
-  tasks.push_back([ui]() {
+  UI::tft->fillRect(0, 30, 320, 450, TFT_BLACK);
+  UI::tasks.push_back([ui]() {
     activeUI.reset();
     activeUI = ui();
   });
@@ -75,8 +68,8 @@ void setUI(T&& ui) {
 
 void setLocoKeypadUI(const Events::EventCallback &&onCancel) {
   setUI([onCancel]() {
-    auto ui = makeUI<Keypad>("Loco Address", 10293, 0);
-    ui->addEventListener(static_cast<uint8_t>(Keypad::Event::ENTER), [](void *parameter) {
+    auto ui = std::make_unique<Keypad>("Loco Address", 10293, 0);
+    ui->addEventListener(static_cast<uint8_t>(Keypad::Event::ENTER), [](void* parameter) {
       locos.add(*static_cast<uint16_t*>(parameter));
       setLocoUI();
     });
@@ -87,8 +80,8 @@ void setLocoKeypadUI(const Events::EventCallback &&onCancel) {
 
 void setLocoByNameUI(bool group) {
   setUI([group]() {
-    auto ui = makeUI<LocoByNameUI>(group);
-    ui->addEventListener(static_cast<uint8_t>(LocoByNameUI::Event::SELECTED), [](void *parameter) {
+    auto ui = std::make_unique<LocoByNameUI>(group);
+    ui->addEventListener(static_cast<uint8_t>(LocoByNameUI::Event::SELECTED), [](void* parameter) {
       locos.add(*static_cast<uint16_t*>(parameter));
       setLocoUI();
     });
@@ -98,11 +91,11 @@ void setLocoByNameUI(bool group) {
 
 void setLocoUI() {
   setUI([]() {
-    auto ui = makeUI<LocoUI>(&dccExCS, locos);
-    ui->addEventListener(static_cast<uint8_t>(LocoUI::Event::SWIPE_ACTION), [](void *parameter) {
+    auto ui = std::make_unique<LocoUI>(dccExCS, locos);
+    ui->addEventListener(static_cast<uint8_t>(LocoUI::Event::SWIPE_ACTION), [](void* parameter) {
       switch (*static_cast<SettingsClass::LocoUI::Swipe::Action*>(parameter)) {
         case SettingsClass::LocoUI::Swipe::Action::KEYPAD: {
-          setLocoKeypadUI([](void *parameter) {
+          setLocoKeypadUI([](void* parameter) {
             if (locos == 0) {
               setMenuUI();
             } else {
@@ -143,29 +136,25 @@ void setLocoUI() {
 
 void setAccessoryKeypadUI(bool state) {
   setUI([state]() {
-    auto ui = makeUI<Keypad>("Accessory Address", 2044, 1);
-    ui->addEventListener(static_cast<uint8_t>(Keypad::Event::ENTER), [state](void *parameter) {
+    auto ui = std::make_unique<Keypad>("Accessory Address", 2044, 1);
+    ui->addEventListener(static_cast<uint8_t>(Keypad::Event::ENTER), [state](void* parameter) {
       dccExCS.accessory(*static_cast<uint16_t*>(parameter), state);
       setMenuUI();
     });
-    ui->addEventListener(static_cast<uint8_t>(Keypad::Event::CANCEL), [](void *parameter) {
+    ui->addEventListener(static_cast<uint8_t>(Keypad::Event::CANCEL), [](void* parameter) {
       setMenuUI();
     });
     return ui;
   });
 }
 
-/**
- * @brief Set the active UI to the menu
- * 
- */
 void setMenuUI() {
   setUI([]() {
-    auto ui = makeUI<MenuUI>(&power);
-    ui->addEventListener(static_cast<uint8_t>(MenuUI::Event::SELECTED), [](void *parameter) {
+    auto ui = std::make_unique<MenuUI>(power);
+    ui->addEventListener(static_cast<uint8_t>(MenuUI::Event::SELECTED), [](void* parameter) {
       switch (*static_cast<MenuUI::Button*>(parameter)) {
         case MenuUI::Button::LOCO_LOAD_BY_ADDRESS: {
-          setLocoKeypadUI([](void *parameter) {
+          setLocoKeypadUI([](void* parameter) {
             setMenuUI();
           });
         } break;
@@ -179,7 +168,7 @@ void setMenuUI() {
         } break;
         case MenuUI::Button::LOCO_PROGRAM: {
           setUI([]() {
-            return makeUI<ProgramUI>(&dccExCS);
+            return std::make_unique<ProgramUI>(dccExCS);
           });
         } break;
         case MenuUI::Button::ACCESSORY_ON:
@@ -207,12 +196,12 @@ void setMenuUI() {
         } break;
         case MenuUI::Button::SERVER: {
           setUI([]() {
-            return makeUI<WiFiUI>();
+            return std::make_unique<WiFiUI>();
           });
         } break;
         case MenuUI::Button::SETTINGS: {
           setUI([]() {
-            return makeUI<SettingsUI>();
+            return std::make_unique<SettingsUI>();
           });
         } break;
       }
@@ -222,7 +211,7 @@ void setMenuUI() {
 }
 
 // Based off the helpful blog post here, https://savjee.be/2020/02/esp32-keep-wifi-alive-with-freertos-task/
-void keepConnectionsAlive(void *parameter) {
+void keepConnectionsAlive(void* parameter) {
   for (;;) {
     if (Settings.CS.valid()) { // Valid if we have SSID, Server & Port
       if (WiFi.status() != WL_CONNECTED) {
@@ -242,7 +231,7 @@ void keepConnectionsAlive(void *parameter) {
   }
 }
 
-void powerCheck(void *parameter) {
+void powerCheck(void* parameter) {
   for (;;) {
     uint32_t total = 0;
     for (uint8_t i = 0; i < 10; i++) {
@@ -254,8 +243,8 @@ void powerCheck(void *parameter) {
     voltage *= 2;
     voltage /= 1000;
 
-    tasks.push_back([voltage]() {
-      uiHeader.setPowerStatus(voltage);
+    UI::tasks.push_back([voltage]() {
+      uiHeader->setPowerStatus(voltage);
     });
     vTaskDelay(POWER_CHECK / portTICK_PERIOD_MS);
   }
@@ -269,17 +258,14 @@ void setRotation() {
   }
   #endif
 
-  tft.setRotation(standard ? 2 : 0);
+  UI::tft->setRotation(standard ? 2 : 0);
   ts.setRotation(standard ? GT911::Rotate::_180 : GT911::Rotate::_0);
 
-  tasks.push_back([]() {
-    tft.fillScreen(TFT_BLACK);
-    uiHeader.draw();
-  });
-
   if (activeUI != nullptr) {
-    tasks.push_back([]() {
-      activeUI->rotated();
+    UI::tasks.push_back([]() {
+      UI::tft->fillScreen(TFT_BLACK);
+      uiHeader->redraw();
+      activeUI->redraw();
     });
   }
 }
@@ -297,7 +283,7 @@ void setup() {
 
   // Load the settings
   Settings.load();
-  Settings.addEventListener(static_cast<uint8_t>(SettingsClass::Event::ROTATION_CHANGE), [](void *parameter) {
+  Settings.addEventListener(static_cast<uint8_t>(SettingsClass::Event::ROTATION_CHANGE), [](void* parameter) {
     #if defined(USE_ACCELEROMETER)
     lastOrientation = acce.getOrientation();
     #endif
@@ -305,9 +291,11 @@ void setup() {
   });
 
   // Start the TFT display
-  tft.init();
-  tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.loadFont("fonts/FreeSans-18");
+  UI::tft = &tft;
+  UI::tft->init();
+  UI::tft->fillScreen(TFT_BLACK);
+  UI::tft->setTextColor(TFT_WHITE, TFT_BLACK);
+  UI::tft->loadFont("fonts/FreeSans-18");
 
   // pinMode(12, OUTPUT);
   // digitalWrite(12, HIGH); // Keep backlight on
@@ -317,7 +305,7 @@ void setup() {
   // Start the touchscreen
   if (ts.begin()) {
     // Tweak the touchscreen borders
-    GTConfig *cfg = ts.readConfig();
+    GTConfig* cfg = ts.readConfig();
     cfg->hSpace = (5 | (5 << 4));
     cfg->vSpace = (5 | (5 << 4));
     ts.writeConfig();
@@ -341,9 +329,6 @@ void setup() {
   // TODO, fork encoder and break out with begin method? need to construct here as the class constructor tries to set pins before the ESP32 is ready
   encoder = new Encoder(ENCODER_B, ENCODER_A);
 
-  // Set initial rotation after TFT & TS initialised, will also draw the UIHeader
-  setRotation();
-
   // Setup the WiFi
   WiFi.setHostname(THROTTLE_AP_NAME);
   WiFi.persistent(false);
@@ -351,37 +336,37 @@ void setup() {
   
   // WiFi connected
   WiFi.onEvent([](WiFiEvent_t event, WiFiEventInfo_t info) {
-    tasks.push_back([]() {
-      uiHeader.setWiFiStatus(true);
+    UI::tasks.push_back([]() {
+      uiHeader->setWiFiStatus(true);
     });
   }, ARDUINO_EVENT_WIFI_STA_CONNECTED);
   // WiFi disconnected
   WiFi.onEvent([](WiFiEvent_t event, WiFiEventInfo_t info) {
-    tasks.push_back([]() {
-      uiHeader.setWiFiStatus(false);
+    UI::tasks.push_back([]() {
+      uiHeader->setWiFiStatus(false);
     });
   }, ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
   // CS connected
-  csClient.onConnect([](void *arg, AsyncClient *client) {
-    tasks.push_back([]() {
+  csClient.onConnect([](void* arg, AsyncClient* client) {
+    UI::tasks.push_back([]() {
       dccExCS.getCSPower(); // Get current power status
-      uiHeader.setCSStatus(true);
+      uiHeader->setCSStatus(true);
     });
   });
   // CS disconnected
-  csClient.onDisconnect([](void *arg, AsyncClient *client) {
-    tasks.push_back([]() {
-      uiHeader.setCSStatus(false);
+  csClient.onDisconnect([](void* arg, AsyncClient* client) {
+    UI::tasks.push_back([]() {
+      uiHeader->setCSStatus(false);
     });
   });
   // If the connection to the CS times out then close it so it'll attempt a reconnect
-  csClient.onTimeout([](void *arg, AsyncClient*, uint32_t time) {
-    tasks.push_back([]() {
+  csClient.onTimeout([](void* arg, AsyncClient* client, uint32_t time) {
+    UI::tasks.push_back([]() {
       csClient.close(true);
     });
   });
   // CS data
-  csClient.onData([](void *arg, AsyncClient *client, void *data, uint16_t len) {
+  csClient.onData([](void* arg, AsyncClient* client, void* data, uint16_t len) {
     for (uint16_t i = 0; i < len; i++) {
       if (static_cast<uint8_t*>(data)[i] == '<') { // Start of cmd
         csBuffer[0] = '\0';
@@ -397,28 +382,28 @@ void setup() {
   });
 
   // Aquired loco count change
-  locos.addEventListener(static_cast<uint8_t>(Locos::Event::COUNT_CHANGE), [](void *parameter) {
-    tasks.push_back([count = *static_cast<uint8_t*>(parameter)]() {
-      uiHeader.setLocoCount(count);
+  locos.addEventListener(static_cast<uint8_t>(Locos::Event::COUNT_CHANGE), [](void* parameter) {
+    UI::tasks.push_back([count = *static_cast<uint8_t*>(parameter)]() {
+      uiHeader->setLocoCount(count);
     });
   });
 
   // CS Power event
-  dccExCS.addEventListener(static_cast<uint8_t>(DCCExCS::Event::BROADCAST_POWER), [](void *parameter) {
+  dccExCS.addEventListener(static_cast<uint8_t>(DCCExCS::Event::BROADCAST_POWER), [](void* parameter) {
     power = *static_cast<DCCExCS::Power*>(parameter); // Remember current power states
 
     auto menu = dynamic_cast<MenuUI*>(activeUI.get());
     if (menu != nullptr) { // If the current UI is the menu then update the power button states
-      tasks.push_back([menu]() {
+      UI::tasks.push_back([menu]() {
         menu->csPowerChange();
       });
     }
   });
 
   // If the CS settings change we disconnect so the keep alive task will reconnect using new values
-  Settings.addEventListener(static_cast<uint8_t>(SettingsClass::Event::CS_CHANGE), [](void *parameter) {
+  Settings.addEventListener(static_cast<uint8_t>(SettingsClass::Event::CS_CHANGE), [](void* parameter) {
     // Done in task queue otherwise we crash out with watchdog timer
-    tasks.push_back([]() {
+    UI::tasks.push_back([]() {
       csClient.close();
       WiFi.disconnect();
     });
@@ -427,6 +412,19 @@ void setup() {
   xTaskCreatePinnedToCore(powerCheck, "powerCheck", 1024, NULL, 1, NULL, 1);
   xTaskCreatePinnedToCore(keepConnectionsAlive, "keepConnectionsAlive", 2048, NULL, 1, NULL, 1);
 
+  // Set initial rotation before any display output
+  setRotation();
+  // Create UI Header
+  uiHeader = std::make_unique<UIHeader>();
+  uiHeader->addEventListener(static_cast<uint8_t>(UIHeader::Event::MENU), [](void* parameter) {
+    if (dynamic_cast<MenuUI*>(activeUI.get()) != nullptr) { // Is current UI the menu?
+      if (locos != 0) { // If we're already on the menu and there's an active loco switch to the loco UI
+        setLocoUI();
+      }
+    } else { // Load the menu UI
+      setMenuUI();
+    }
+  });
   // Start with the menu
   setMenuUI();
 }
@@ -452,19 +450,9 @@ void loop() {
     GTPoint points[touches];
     memcpy(points, ts.getPoints(), touches * sizeof(GTPoint));
     // If menu press
-    if (uiHeader.menuTouch(points[0].x, points[0].y)) {
-      while (ts.touched(GT911_MODE_POLLING)) {
-        delay(25);
-      }
-
-      if (dynamic_cast<MenuUI*>(activeUI.get()) != nullptr) { // Is current UI the menu?
-        if (locos != 0) { // If we're already on the menu and there's an active loco switch to the loco UI
-          setLocoUI();
-        }
-      } else { // Load the menu UI
-        setMenuUI();
-      }
-    } else {
+    if (!uiHeader->handleTouch(touches, points, []() -> bool {
+      return ts.touched(GT911_MODE_POLLING);
+    })) {
       // Attempt to detect swipe
       UI::Swipe swipe = UI::Swipe::NONE;
       delay(5);
@@ -489,11 +477,9 @@ void loop() {
       }
 
       if (swipe == UI::Swipe::NONE) {
-        activeUI->touch(touches, points);
-        while (ts.touched(GT911_MODE_POLLING)) {
-          delay(25);
-        }
-        activeUI->release(touches, points);
+        activeUI->handleTouch(touches, points, []() -> bool {
+          return ts.touched(GT911_MODE_POLLING);
+        });
         Serial.println(ESP.getFreeHeap());
       } else {
         activeUI->swipe(swipe);
@@ -523,9 +509,9 @@ void loop() {
   }
   #endif
 
-  while (!tasks.empty()) {
-    tasks[0]();
-    tasks.pop_front();
+  while (!UI::tasks.empty()) {
+    UI::tasks[0]();
+    UI::tasks.pop_front();
   }
 
   activeUI->loop();

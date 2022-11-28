@@ -12,16 +12,25 @@
 
 class UI {
   public:
-    using Tasks = std::deque<std::function<void (void)>>;
+    static inline TFT_eSPI* tft;
+    static inline std::deque<std::function<void (void)>> tasks;
   protected:
-    TFT_eSPI *_tft;
-    Tasks *_tasks;
+    std::unique_ptr<UI> _child;
+    std::vector<std::unique_ptr<UI>> _components;
     std::vector<std::unique_ptr<Element>> _elements;
 
     template <class T, typename... Args>
-    inline T* addElement(Args&&... args) {
-      return static_cast<T*>(_elements.emplace_back(std::make_unique<T>(_tft, std::forward<Args>(args)...)).get());
+    inline T* addComponent(Args&&... args) {
+      return static_cast<T*>(_components.emplace_back(std::make_unique<T>(args...)).get());
     }
+
+    template <class T, typename... Args>
+    inline T* addElement(Args&&... args) {
+      return static_cast<T*>(_elements.emplace_back(std::make_unique<T>(args...)).get());
+    }
+
+    virtual bool touch(uint8_t count, GTPoint* points);
+    virtual bool release(uint8_t count, GTPoint* points);
   public:
     struct Encoder {
       enum class Rotation : uint8_t {
@@ -47,17 +56,18 @@ class UI {
       RIGHT
     };
 
-    UI(TFT_eSPI *tft, Tasks *tasks);
+    UI();
     virtual ~UI() = default;
 
     virtual void loop();
-    virtual void rotated();
+    virtual void redraw();
 
-    virtual void touch(uint8_t count, GTPoint* points);
-    virtual void release(uint8_t count, GTPoint* points);
+    bool handleTouch(uint8_t count, GTPoint* points, std::function<bool()> touched);
     virtual void encoderRotate(Encoder::Rotation rotation);
     virtual void encoderPress(Encoder::ButtonPress press);
     virtual void swipe(Swipe swipe);
+
+    void reset(bool redrawAfter = false);
 };
 
 #endif

@@ -47,12 +47,11 @@ class SettingsClass : public Events {
         bool server(const String &value);
 
         uint16_t port() const;
-        void port(const uint16_t &value);
+        void port(uint16_t value);
       
         CS() {
           _ssid.reserve(32);
           _password.reserve(63);
-          _server.reserve(32);
         }
     } CS;
 

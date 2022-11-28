@@ -5,7 +5,8 @@
 #include <Events.h>
 
 class Touch : Events {
-  protected:
+  private:
+    uint8_t _margin;
     uint16_t _x, _y;
     uint16_t _w, _h;
   public:
@@ -14,13 +15,13 @@ class Touch : Events {
       RELEASE
     };
 
-    Touch(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
+    Touch(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint8_t margin = 0);
 
-    void onTouch(const EventCallback &&touched);
-    void onRelease(const EventCallback &&released);
+    void onTouch(const EventCallback&& touched);
+    void onRelease(const EventCallback&& released);
     bool contains(uint16_t x, uint16_t y);
-    void touched(void *parameter = nullptr);
-    void released(void *parameter = nullptr);
+    void touched(void* parameter);
+    void released(void* parameter);
 };
 
 #endif

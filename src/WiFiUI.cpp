@@ -1,10 +1,12 @@
 #include <WiFiUI.h>
 #include <Elements/Header.h>
+#include <Keyboard.h>
+#include <Keypad.h>
 #include <WiFi.h>
 #include <Settings.h>
 #include <qrcode_espi.h>
 
-WiFiUI::WiFiUI(TFT_eSPI *tft, Tasks *tasks) : UI(tft, tasks) {
+WiFiUI::WiFiUI() {
   _elements.reserve(11);
 
   WiFi.mode(WIFI_AP_STA);
@@ -18,9 +20,29 @@ WiFiUI::WiFiUI(TFT_eSPI *tft, Tasks *tasks) : UI(tft, tasks) {
   addElement<Header>(0, 40, 320, 18, "CS Settings");
 
   _labelSSID = addElement<Label>(0, 67, 320, 18, "", true);
+  _labelSSID->onRelease([this](void* parameter) {
+    keyboard("SSID", Settings.CS.SSID(), [](const String &value) {
+      Settings.CS.SSID(value);
+    });
+  });
   _labelPassword = addElement<Label>(0, 94, 320, 18, "", true);
+  _labelPassword->onRelease([this](void* parameter) {
+    keyboard("Password", Settings.CS.password(), [](const String &value) {
+      Settings.CS.password(value);
+    });
+  });
   _labelServer = addElement<Label>(0, 121, 320, 18, "", true);
+  _labelServer->onRelease([this](void* parameter) {
+    keyboard("Server", Settings.CS.server(), [](const String &value) {
+      Settings.CS.server(value);
+    });
+  });
   _labelPort = addElement<Label>(0, 148, 320, 18, "", true);
+  _labelPort->onRelease([this](void* parameter) {
+    keypad("Port", Settings.CS.port(), [](uint16_t value) {
+      Settings.CS.port(value);
+    });
+  });
 
   addElement<Header>(0, 175, 320, 18, "Throttle AP Settings");
 
@@ -49,13 +71,13 @@ void WiFiUI::loop() {
   dns.processNextRequest();
 }
 
-void WiFiUI::rotated() {
-  UI::rotated();
+void WiFiUI::redraw() {
+  UI::redraw();
   drawQR();
 }
 
 void WiFiUI::drawQR() {
-  TFT_eSprite qr(_tft);
+  TFT_eSprite qr(UI::tft);
   qr.createSprite(132, 132);
   QRcode_eSPI qrcode(&qr);
   qrcode.init();
@@ -71,20 +93,20 @@ void WiFiUI::drawQR() {
 
 void WiFiUI::swipe(Swipe swipe) {
   if (swipe == Swipe::NONE || swipe == Swipe::LEFT || swipe == Swipe::RIGHT) {
+    if (swipe != Swipe::NONE) {
+      _alternateQR = !_alternateQR;
+    }
     if (_alternateQR) {
       _labelScan->setLabel("Scan below to connect to throttle AP");
     } else {
       _labelScan->setLabel("Scan below to connect to throttle setup");
     }
     drawQR();
-    if (swipe != Swipe::NONE) {
-      _alternateQR = !_alternateQR;
-    }
   }
 }
 
 void WiFiUI::updated() {
-  _tasks->push_back([this]() {
+  UI::tasks.push_back([this]() {
     String SSID("SSID: ");
     SSID += Settings.CS.SSID().isEmpty() ? "(Not Set)" : Settings.CS.SSID();
     _labelSSID->setLabel(SSID);
@@ -100,5 +122,43 @@ void WiFiUI::updated() {
     String port("Port: ");
     port += Settings.CS.port() == 0 ? "(Not Set)" : String(Settings.CS.port());
     _labelPort->setLabel(port);
+  });
+}
+
+void WiFiUI::keyboard(const String& title, const String &value, void(*setting)(const String&)) {
+  UI::tasks.push_back([this, title, value, setting]() {
+    reset();
+    auto keyboard = std::make_unique<Keyboard>(title, value);
+    keyboard->addEventListener(static_cast<uint8_t>(Keyboard::Event::ENTER), [this, setting](void* parameter) {
+      setting(*static_cast<String*>(parameter));
+      if (Settings.CS.valid()) {
+        Settings.save();
+      }
+      reset(true);
+      Settings.dispatchEvent(static_cast<uint8_t>(SettingsClass::Event::CS_CHANGE));
+    });
+    keyboard->addEventListener(static_cast<uint8_t>(Keyboard::Event::CANCEL), [this](void* parameter) {
+      reset(true);
+    });
+    _child = std::move(keyboard);
+  });
+}
+
+void WiFiUI::keypad(const String& title, uint16_t value, void(*setting)(uint16_t)) {
+    UI::tasks.push_back([this, title, value, setting]() {
+    reset();
+    auto keypad = std::make_unique<Keypad>(title, 65535, 1, value);
+    keypad->addEventListener(static_cast<uint8_t>(Keyboard::Event::ENTER), [this, setting](void* parameter) {
+      setting(*static_cast<uint16_t*>(parameter));
+      if (Settings.CS.valid()) {
+        Settings.save();
+      }
+      reset(true);
+      Settings.dispatchEvent(static_cast<uint8_t>(SettingsClass::Event::CS_CHANGE));
+    });
+    keypad->addEventListener(static_cast<uint8_t>(Keyboard::Event::CANCEL), [this](void* parameter) {
+      reset(true);
+    });
+    _child = std::move(keypad);
   });
 }

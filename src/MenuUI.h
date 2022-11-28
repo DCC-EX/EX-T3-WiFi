@@ -31,16 +31,16 @@ class MenuUI : public UI, public Events {
       SETTINGS
     };
   private:
-    DCCExCS::Power *power;
+    DCCExCS::Power& power;
 
-    Btn *powerAll;
-    Btn *powerMain;
-    Btn *powerProg;
-    Btn *powerJoin;
+    Btn* powerAll;
+    Btn* powerMain;
+    Btn* powerProg;
+    Btn* powerJoin;
 
     void selected(Button button);
   public:
-    MenuUI(TFT_eSPI *tft, Tasks *tasks, DCCExCS::Power *power);
+    MenuUI(DCCExCS::Power& power);
 
     void csPowerChange();
 };

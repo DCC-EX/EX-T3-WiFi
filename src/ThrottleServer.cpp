@@ -15,12 +15,12 @@ void ThrottleServer::begin() {
     .setCacheControl("max-age=604800")
     .setDefaultFile("index.html");
 
-  on("/cs", HTTP_HEAD, [](AsyncWebServerRequest *request) {
+  on("/cs", HTTP_HEAD, [](AsyncWebServerRequest* request) {
     request->send(Settings.CS.valid() ? 200 : 404);
   });
 
-  on("/cs", HTTP_GET, [](AsyncWebServerRequest *request) {
-    AsyncJsonResponse *response = new AsyncJsonResponse(false, 1024);
+  on("/cs", HTTP_GET, [](AsyncWebServerRequest* request) {
+    AsyncJsonResponse* response = new AsyncJsonResponse(false, 1024);
     JsonVariant& cs = response->getRoot();
 
     cs["ssid"] = Settings.CS.SSID();
@@ -32,7 +32,7 @@ void ThrottleServer::begin() {
     request->send(response);
   });
 
-  addHandler(new AsyncCallbackJsonWebHandler("/cs", [](AsyncWebServerRequest *request, JsonVariant &json) {
+  addHandler(new AsyncCallbackJsonWebHandler("/cs", [](AsyncWebServerRequest* request, JsonVariant &json) {
     Settings.CS.SSID(json["ssid"]);
     Settings.CS.password(json["password"]);
     Settings.CS.server(json["server"]);
@@ -48,8 +48,8 @@ void ThrottleServer::begin() {
     }
   }));
 
-  on("^(\\/(?:locos|fns|icons))$", HTTP_GET, [](AsyncWebServerRequest *request) {
-    AsyncJsonResponse *response = new AsyncJsonResponse(true, 4096);
+  on("^(\\/(?:locos|fns|icons))$", HTTP_GET, [](AsyncWebServerRequest* request) {
+    AsyncJsonResponse* response = new AsyncJsonResponse(true, 4096);
     JsonVariant& list = response->getRoot();
 
     File listDir = SD.open(request->pathArg(0));
@@ -83,11 +83,11 @@ void ThrottleServer::begin() {
     request->send(response);
   });
 
-  on("^\\/locos\\/.+\\.json$", HTTP_HEAD, [](AsyncWebServerRequest *request) {
+  on("^\\/locos\\/.+\\.json$", HTTP_HEAD, [](AsyncWebServerRequest* request) {
     request->send(SD.exists(request->url()) ? 204 : 404);
   });
 
-  on("^\\/(?:(?:locos|fns|icons)\\/.+|groups)\\.(?:json|bmp)$", HTTP_GET, [](AsyncWebServerRequest *request) {
+  on("^\\/(?:(?:locos|fns|icons)\\/.+|groups)\\.(?:json|bmp)$", HTTP_GET, [](AsyncWebServerRequest* request) {
     if (request->url().endsWith(".bmp")) { // Bit hacky but allows us to use the built in ETag and Cache-Control code
       AsyncStaticWebHandler handler("", SD, "", "max-age=604800");
       handler.canHandle(request);
@@ -97,14 +97,14 @@ void ThrottleServer::begin() {
     }
   });
 
-  on("^\\/(?:locos|fns|icons)\\/.+\\.(?:json|bmp)$", HTTP_DELETE, [](AsyncWebServerRequest *request) {
+  on("^\\/(?:locos|fns|icons)\\/.+\\.(?:json|bmp)$", HTTP_DELETE, [](AsyncWebServerRequest* request) {
     bool success = SD.remove(request->url());
     request->send(success ? 204 : 404);
   });
 
-  on("^\\/(?:(?:locos|fns|icons)\\/.+|groups)\\.(?:json|bmp)$", HTTP_PUT, [](AsyncWebServerRequest *request) {
+  on("^\\/(?:(?:locos|fns|icons)\\/.+|groups)\\.(?:json|bmp)$", HTTP_PUT, [](AsyncWebServerRequest* request) {
 
-  }, NULL, [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total) {
+  }, NULL, [](AsyncWebServerRequest* request, uint8_t* data, size_t len, size_t index, size_t total) {
     if (!request->_tempFile) {
       request->_tempFile = SD.open(request->url(), "w");
     }

@@ -3,7 +3,7 @@
 #include <Functions.h>
 #include <Elements/Header.h>
 
-LocoByNameUI::LocoByNameUI(TFT_eSPI *tft, Tasks *tasks, bool groups) : UI(tft, tasks) {
+LocoByNameUI::LocoByNameUI(bool groups) {
   _elements.reserve(9);
   
   addElement<Header>(0, 40, 320, 18, "Select Loco");
@@ -34,7 +34,7 @@ LocoByNameUI::LocoByNameUI(TFT_eSPI *tft, Tasks *tasks, bool groups) : UI(tft, t
   drawPagingAndButtons();
 }
 
-void LocoByNameUI::addLoco(File locoFile) {
+void LocoByNameUI::addLoco(File& locoFile) {
   StaticJsonDocument<16> filterDoc;
   filterDoc["name"] = true;
   StaticJsonDocument<64> locoDoc;
@@ -42,7 +42,7 @@ void LocoByNameUI::addLoco(File locoFile) {
   ReadBufferingStream bufferedFile(locoFile, locoDoc.capacity());
   deserializeJson(locoDoc, bufferedFile, DeserializationOption::Filter(filterDoc));
 
-  uint16_t address = strtoul(locoFile.name(), (char **)NULL, 10);
+  uint16_t address = strtoul(locoFile.name(), (char**)NULL, 10);
   String name = "#";
   name += address;
   name += " - ";
@@ -53,33 +53,33 @@ void LocoByNameUI::addLoco(File locoFile) {
 }
 
 void LocoByNameUI::drawPagingAndButtons() {
-  _count = _btnsDoc.size();
+  uint8_t count = _btnsDoc.size();
 
-  if (_count > 8) { // If there's more than 8 buttons we need paging
-    uint8_t pages = divideAndCeil(_count, 8);
-    _paging = std::make_unique<Paging>(_tft, _tasks, pages);
-    _paging->addEventListener(static_cast<uint8_t>(Paging::Event::CHANGED), [this](void *parameter) {
+  if (count > 8) { // If there's more than 8 buttons we need paging
+    uint8_t pages = divideAndCeil(count, 8);
+    auto paging = addComponent<Paging>(pages);
+    paging->addEventListener(static_cast<uint8_t>(Paging::Event::CHANGED), [this](void* parameter) {
       destroyButtons();
-      drawButtons();
+      drawButtons(*static_cast<uint8_t*>(parameter));
     });
   } else {
-    _paging.reset();
+    _components.clear();
   }
 
   drawButtons();
 }
 
-void LocoByNameUI::drawButtons() {
-  _tft->fillRect(0, 90, 320, 344, TFT_BLACK); // Clear buttons
+void LocoByNameUI::drawButtons(uint8_t page) {
+  UI::tft->fillRect(0, 90, 320, 344, TFT_BLACK); // Clear buttons
 
   uint16_t y = 70;
   uint8_t i = 0;
-  
+
   for (JsonObjectConst const& btn : _btnsDoc) {
-    if (_paging == nullptr || divideAndCeil(++i, 7) == _paging->getPage()) {
+    if (divideAndCeil(++i, 7) == page) {
       addElement<Button>(0, y, 320, 42, btn["name"].as<const char*>())
-        ->onRelease([this, btn](void *parameter) {
-          _tasks->push_back([this, btn] {
+        ->onRelease([this, btn](void* parameter) {
+          UI::tasks.push_back([this, btn] {
             if (btn.containsKey("locos")) {
               loadGroup(btn["locos"].as<JsonArrayConst>());
             } else {
@@ -111,35 +111,8 @@ void LocoByNameUI::loadGroup(JsonArrayConst locos) {
     }
   }
 
-  _tft->fillRect(0, 435, 320, 42, TFT_BLACK); // Clear paging
-  _paging.reset();
+  UI::tft->fillRect(0, 435, 320, 42, TFT_BLACK); // Clear paging
+  _components.clear();
   destroyButtons();
   drawPagingAndButtons();
-}
-
-void LocoByNameUI::rotated() {
-  UI::rotated();
-  if (_paging != nullptr) {
-    _paging->rotated();
-  }
-}
-
-void LocoByNameUI::touch(uint8_t count, GTPoint* points) {
-  UI::touch(count, points);
-  if (_paging != nullptr) {
-    _paging->touch(count, points);
-  }
-}
-
-void LocoByNameUI::release(uint8_t count, GTPoint* points) {
-  UI::release(count, points);
-  if (_paging != nullptr) {
-    _paging->release(count, points);
-  }
-}
-
-void LocoByNameUI::encoderRotate(Encoder::Rotation rotation) {
-  if (_paging != nullptr) {
-    _paging->encoderRotate(rotation);
-  }
 }
