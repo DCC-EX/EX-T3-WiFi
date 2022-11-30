@@ -33,9 +33,10 @@ class ProgramUI : public UI {
     uint16_t _stepData[2];
 
     void newStep(Step step, const String& title, uint16_t max, uint16_t min);
-    void keypadEnter(void* parameter);
+    void keypadEnter(uint32_t number);
+    void confirm(const String& message, Events::EventCallback&& callback);
     void working();
-    void result(const String& label, uint16_t color);
+    void result(const String& message, uint16_t color);
   public:
     ProgramUI(DCCExCS& dccExCS);
     ~ProgramUI();

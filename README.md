@@ -37,3 +37,4 @@
 - [Throttle menu](/docs/menu.md)
 - [Throttle features](/docs/features.md)
 - [Running Locos](/docs/running.md)
+- [Decoder Programming](/docs/programming.md)

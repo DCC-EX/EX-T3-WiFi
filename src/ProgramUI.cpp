@@ -3,7 +3,7 @@
 #include <MessageBox.h>
 
 ProgramUI::ProgramUI(DCCExCS& dccExCS) : _dccExCS(dccExCS) {
-  _elements.reserve(10);
+  _elements.reserve(11);
 
   _timeoutHandler = _dccExCS.addEventListener(static_cast<uint8_t>(DCCExCS::Event::TIMEOUT), [this](void* parameter) {
     result("Timeout", TFT_RED);
@@ -69,7 +69,7 @@ void ProgramUI::newStep(Step step, const String& title, uint16_t max, uint16_t m
     reset();
     auto keypad = std::make_unique<Keypad>(title, max, min);
     keypad->addEventListener(static_cast<uint8_t>(Keypad::Event::ENTER), [this](void* parameter) {
-      UI::tasks.push_back(std::bind(&ProgramUI::keypadEnter, this, parameter));
+      UI::tasks.push_back(std::bind(&ProgramUI::keypadEnter, this, *static_cast<uint32_t*>(parameter)));
     });
     keypad->addEventListener(static_cast<uint8_t>(Keypad::Event::CANCEL), [this](void* parameter) {
       UI::tasks.push_back([this]() {
@@ -80,12 +80,15 @@ void ProgramUI::newStep(Step step, const String& title, uint16_t max, uint16_t m
   });
 }
 
-void ProgramUI::keypadEnter(void* parameter) {
-  uint32_t number = *static_cast<uint32_t*>(parameter);
+void ProgramUI::keypadEnter(uint32_t number) {
   switch (_step) {
     case Step::WRITE_ADDRESS_GET_ADDRESS: {
-      working();
-      _dccExCS.setLocoAddress(number);
+      String message = "Write Address?\nAddress: ";
+      message += number;
+      confirm(message, [this, number](void* parameter) {
+        working();
+        _dccExCS.setLocoAddress(number);
+      });
     } break;
     case Step::READ_CV_BYTE_GET_CV: {
       working();
@@ -96,8 +99,14 @@ void ProgramUI::keypadEnter(void* parameter) {
       newStep(Step::WRITE_CV_BYTE_GET_VALUE, "Enter Byte Value", 255, 0);
     } break;
     case Step::WRITE_CV_BYTE_GET_VALUE: {
-      working();
-      _dccExCS.setLocoCVByte(_stepData[0], number);
+      String message = "Write CV Value?\nCV: ";
+      message += _stepData[0];
+      message += "\nValue: ";
+      message += number;
+      confirm(message, [this, number](void* parameter) {
+        working();
+        _dccExCS.setLocoCVByte(_stepData[0], number);
+      });
     } break;
     case Step::READ_CV_BIT_GET_CV: {
       _stepData[0] = number;
@@ -116,8 +125,16 @@ void ProgramUI::keypadEnter(void* parameter) {
       newStep(Step::WRITE_CV_BIT_GET_VALUE, "Enter Value", 1, 0);
     } break;
     case Step::WRITE_CV_BIT_GET_VALUE: {
-      working();
-      _dccExCS.setLocoCVBit(_stepData[0], _stepData[1], number);
+      String message = "Write CV Bit Value?\nCV: ";
+      message += _stepData[0];
+      message += "\nBit: ";
+      message += _stepData[1];
+      message += "\nValue: ";
+      message += number;
+      confirm(message, [this, number](void* parameter) {
+        working();
+        _dccExCS.setLocoCVBit(_stepData[0], _stepData[1], number);
+      });
     } break;
     case Step::ACK_LIMIT: {
       _dccExCS.setAckLimit(number);
@@ -134,14 +151,32 @@ void ProgramUI::keypadEnter(void* parameter) {
   }
 }
 
+void ProgramUI::confirm(const String& message, Events::EventCallback&& callback) {
+  reset();
+  _child = std::make_unique<MessageBox>(message, std::vector<MessageBox::Button> {
+    {
+      "Yes",
+      std::move(callback)
+    },
+    {
+      "No",
+      [this](void* parameter) {
+        UI::tasks.push_back([this]() {
+          reset(true);
+        });
+      }
+    }
+  });
+}
+
 void ProgramUI::working() {
   reset();
   _child = std::make_unique<MessageBox>("Working...", TFT_BLUE);
 }
 
-void ProgramUI::result(const String& label, uint16_t color) {
+void ProgramUI::result(const String& message, uint16_t color) {
   reset();
-  _child = std::make_unique<MessageBox>(label, color, std::vector<MessageBox::Button> {
+  _child = std::make_unique<MessageBox>(message, color, std::vector<MessageBox::Button> {
     {
       "Ok",
       [this](void* parameter) {

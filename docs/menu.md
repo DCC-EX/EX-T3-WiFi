@@ -5,7 +5,7 @@
   * **By Name** - Lists names of locos the throttle has configs for.
   * **By Group** - Lists the configured loco groups.
   * **Release** - Release the current loco.
-  * **Program** - Show the program track options.
+  * **[Program](/docs/programming.md)** - Show the program track options.
 
 ## Accessories
  * **On** - Display a keypad so an accessory address can be selected and an **On** command sent.
