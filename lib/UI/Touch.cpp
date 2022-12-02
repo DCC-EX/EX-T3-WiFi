@@ -4,11 +4,11 @@ Touch::Touch(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint8_t margin)
     : _x(x), _y(y), _w(w), _h(h), _margin(margin) { }
 
 void Touch::onTouch(const EventCallback&& touched) {
-  addEventListener(static_cast<uint8_t>(Event::TOUCH), std::move(touched));
+  addEventListener(Event::TOUCH, std::move(touched));
 }
 
 void Touch::onRelease(const EventCallback&& released) {
-  addEventListener(static_cast<uint8_t>(Event::RELEASE), std::move(released));
+  addEventListener(Event::RELEASE, std::move(released));
 }
 
 bool Touch::contains(uint16_t x, uint16_t y) {
@@ -17,9 +17,9 @@ bool Touch::contains(uint16_t x, uint16_t y) {
 }
 
 void Touch::touched(void* parameter) {
-  dispatchEvent(static_cast<uint8_t>(Event::TOUCH), parameter);
+  dispatchEvent(Event::TOUCH, parameter);
 }
 
 void Touch::released(void* parameter) {
-  dispatchEvent(static_cast<uint8_t>(Event::RELEASE), parameter);
+  dispatchEvent(Event::RELEASE, parameter);
 }

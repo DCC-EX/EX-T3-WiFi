@@ -66,7 +66,7 @@ MenuUI::MenuUI(DCCExCS::Power& power) : power(power) {
 }
 
 void MenuUI::selected(MenuUI::Button button) {
-  dispatchEvent(static_cast<uint8_t>(Event::SELECTED), &button);
+  dispatchEvent(Event::SELECTED, &button);
 }
 
 void MenuUI::csPowerChange() {

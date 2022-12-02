@@ -24,7 +24,7 @@
 
 const uint32_t POWER_CHECK = 60000 * 2; // 2 Minutes
 const uint8_t BATTERY_PIN = A2;
-const uint8_t GESTURE_DISTANCE = 5;
+const uint8_t GESTURE_DISTANCE = 15;
 const uint16_t CONNECTION_ALIVE_DELAY = 2500;
 const uint16_t CONNECTION_TIMEOUT = 10000;
 
@@ -69,11 +69,11 @@ void setUI(T&& ui) {
 void setLocoKeypadUI(const Events::EventCallback &&onCancel) {
   setUI([onCancel]() {
     auto ui = std::make_unique<Keypad>("Loco Address", 10293, 0);
-    ui->addEventListener(static_cast<uint8_t>(Keypad::Event::ENTER), [](void* parameter) {
+    ui->addEventListener(Keypad::Event::ENTER, [](void* parameter) {
       locos.add(*static_cast<uint16_t*>(parameter));
       setLocoUI();
     });
-    ui->addEventListener(static_cast<uint8_t>(Keypad::Event::CANCEL), std::move(onCancel));
+    ui->addEventListener(Keypad::Event::CANCEL, std::move(onCancel));
     return ui;
   });
 }
@@ -81,7 +81,7 @@ void setLocoKeypadUI(const Events::EventCallback &&onCancel) {
 void setLocoByNameUI(bool group) {
   setUI([group]() {
     auto ui = std::make_unique<LocoByNameUI>(group);
-    ui->addEventListener(static_cast<uint8_t>(LocoByNameUI::Event::SELECTED), [](void* parameter) {
+    ui->addEventListener(LocoByNameUI::Event::SELECTED, [](void* parameter) {
       locos.add(*static_cast<uint16_t*>(parameter));
       setLocoUI();
     });
@@ -92,8 +92,8 @@ void setLocoByNameUI(bool group) {
 void setLocoUI() {
   setUI([]() {
     auto ui = std::make_unique<LocoUI>(dccExCS, locos);
-    ui->addEventListener(static_cast<uint8_t>(LocoUI::Event::SWIPE_ACTION), [](void* parameter) {
-      switch (*static_cast<SettingsClass::LocoUI::Swipe::Action*>(parameter)) {
+    ui->addEventListener(LocoUI::Event::SWIPE_ACTION, [](void* parameter) {
+      switch (const auto action = *static_cast<uint8_t*>(parameter)) {
         case SettingsClass::LocoUI::Swipe::Action::KEYPAD: {
           setLocoKeypadUI([](void* parameter) {
             if (locos == 0) {
@@ -105,7 +105,7 @@ void setLocoUI() {
         } break;
         case SettingsClass::LocoUI::Swipe::Action::NAME:
         case SettingsClass::LocoUI::Swipe::Action::GROUP: {
-          bool group = *static_cast<SettingsClass::LocoUI::Swipe::Action*>(parameter) == SettingsClass::LocoUI::Swipe::Action::GROUP;
+          bool group = action == SettingsClass::LocoUI::Swipe::Action::GROUP;
           setLocoByNameUI(group);
         } break;
         case SettingsClass::LocoUI::Swipe::Action::RELEASE: {
@@ -116,7 +116,7 @@ void setLocoUI() {
               ) && locos == 0) {
             setMenuUI();
           } else {
-            (dynamic_cast<LocoUI*>(activeUI.get()))->dispatchEvent(static_cast<uint8_t>(LocoUI::Event::SWIPE_ACTION), &Settings.LocoUI.Swipe.release);
+            (dynamic_cast<LocoUI*>(activeUI.get()))->dispatchEvent(LocoUI::Event::SWIPE_ACTION, &Settings.LocoUI.Swipe.release);
           }
         } break;
         case SettingsClass::LocoUI::Swipe::Action::NEXT: {
@@ -137,11 +137,11 @@ void setLocoUI() {
 void setAccessoryKeypadUI(bool state) {
   setUI([state]() {
     auto ui = std::make_unique<Keypad>("Accessory Address", 2044, 1);
-    ui->addEventListener(static_cast<uint8_t>(Keypad::Event::ENTER), [state](void* parameter) {
+    ui->addEventListener(Keypad::Event::ENTER, [state](void* parameter) {
       dccExCS.accessory(*static_cast<uint16_t*>(parameter), state);
       setMenuUI();
     });
-    ui->addEventListener(static_cast<uint8_t>(Keypad::Event::CANCEL), [](void* parameter) {
+    ui->addEventListener(Keypad::Event::CANCEL, [](void* parameter) {
       setMenuUI();
     });
     return ui;
@@ -151,8 +151,8 @@ void setAccessoryKeypadUI(bool state) {
 void setMenuUI() {
   setUI([]() {
     auto ui = std::make_unique<MenuUI>(power);
-    ui->addEventListener(static_cast<uint8_t>(MenuUI::Event::SELECTED), [](void* parameter) {
-      switch (*static_cast<MenuUI::Button*>(parameter)) {
+    ui->addEventListener(MenuUI::Event::SELECTED, [](void* parameter) {
+      switch (const auto button = *static_cast<MenuUI::Button*>(parameter)) {
         case MenuUI::Button::LOCO_LOAD_BY_ADDRESS: {
           setLocoKeypadUI([](void* parameter) {
             setMenuUI();
@@ -160,7 +160,7 @@ void setMenuUI() {
         } break;
         case MenuUI::Button::LOCO_LOAD_BY_NAME:
         case MenuUI::Button::LOCO_LOAD_BY_GROUP: {
-          bool group = *static_cast<MenuUI::Button*>(parameter) == MenuUI::Button::LOCO_LOAD_BY_GROUP;
+          bool group = button == MenuUI::Button::LOCO_LOAD_BY_GROUP;
           setLocoByNameUI(group);
         } break;
         case MenuUI::Button::LOCO_RELEASE: {
@@ -173,22 +173,22 @@ void setMenuUI() {
         } break;
         case MenuUI::Button::ACCESSORY_ON:
         case MenuUI::Button::ACCESSORY_OFF: {
-          bool state = *static_cast<MenuUI::Button*>(parameter) == MenuUI::Button::ACCESSORY_ON;
+          bool state = button == MenuUI::Button::ACCESSORY_ON;
           setAccessoryKeypadUI(state);
         } break;
         case MenuUI::Button::POWER_ON_ALL:
         case MenuUI::Button::POWER_OFF_ALL: {
-          bool state = *static_cast<MenuUI::Button*>(parameter) == MenuUI::Button::POWER_ON_ALL;
+          bool state = button == MenuUI::Button::POWER_ON_ALL;
           dccExCS.setCSPower(DCCExCS::Power::ALL, state);
         } break;
         case MenuUI::Button::POWER_ON_MAIN:
         case MenuUI::Button::POWER_OFF_MAIN: {
-          bool state = *static_cast<MenuUI::Button*>(parameter) == MenuUI::Button::POWER_ON_MAIN;
+          bool state = button == MenuUI::Button::POWER_ON_MAIN;
           dccExCS.setCSPower(DCCExCS::Power::MAIN, state);
         } break;
         case MenuUI::Button::POWER_ON_PROG:
         case MenuUI::Button::POWER_OFF_PROG: {
-          bool state = *static_cast<MenuUI::Button*>(parameter) == MenuUI::Button::POWER_ON_PROG;
+          bool state = button == MenuUI::Button::POWER_ON_PROG;
           dccExCS.setCSPower(DCCExCS::Power::PROG, state);
         } break;
         case MenuUI::Button::POWER_JOIN: {
@@ -283,7 +283,7 @@ void setup() {
 
   // Load the settings
   Settings.load();
-  Settings.addEventListener(static_cast<uint8_t>(SettingsClass::Event::ROTATION_CHANGE), [](void* parameter) {
+  Settings.addEventListener(SettingsClass::Event::ROTATION_CHANGE, [](void* parameter) {
     #if defined(USE_ACCELEROMETER)
     lastOrientation = acce.getOrientation();
     #endif
@@ -382,14 +382,14 @@ void setup() {
   });
 
   // Aquired loco count change
-  locos.addEventListener(static_cast<uint8_t>(Locos::Event::COUNT_CHANGE), [](void* parameter) {
+  locos.addEventListener(Locos::Event::COUNT_CHANGE, [](void* parameter) {
     UI::tasks.push_back([count = *static_cast<uint8_t*>(parameter)]() {
       uiHeader->setLocoCount(count);
     });
   });
 
   // CS Power event
-  dccExCS.addEventListener(static_cast<uint8_t>(DCCExCS::Event::BROADCAST_POWER), [](void* parameter) {
+  dccExCS.addEventListener(DCCExCS::Event::BROADCAST_POWER, [](void* parameter) {
     power = *static_cast<DCCExCS::Power*>(parameter); // Remember current power states
 
     auto menu = dynamic_cast<MenuUI*>(activeUI.get());
@@ -401,7 +401,7 @@ void setup() {
   });
 
   // If the CS settings change we disconnect so the keep alive task will reconnect using new values
-  Settings.addEventListener(static_cast<uint8_t>(SettingsClass::Event::CS_CHANGE), [](void* parameter) {
+  Settings.addEventListener(SettingsClass::Event::CS_CHANGE, [](void* parameter) {
     // Done in task queue otherwise we crash out with watchdog timer
     UI::tasks.push_back([]() {
       csClient.close();
@@ -416,7 +416,7 @@ void setup() {
   setRotation();
   // Create UI Header
   uiHeader = std::make_unique<UIHeader>();
-  uiHeader->addEventListener(static_cast<uint8_t>(UIHeader::Event::MENU), [](void* parameter) {
+  uiHeader->addEventListener(UIHeader::Event::MENU, [](void* parameter) {
     if (dynamic_cast<MenuUI*>(activeUI.get()) != nullptr) { // Is current UI the menu?
       if (locos != 0) { // If we're already on the menu and there's an active loco switch to the loco UI
         setLocoUI();
@@ -456,7 +456,7 @@ void loop() {
       // Attempt to detect swipe
       UI::Swipe swipe = UI::Swipe::NONE;
       delay(5);
-      uint32_t timeout = millis() + 50;
+      uint32_t timeout = millis() + 150;
       while (millis() < timeout && ts.touched(GT911_MODE_POLLING)) {
         GTPoint p = ts.getPoint(0);
         if (points[0].y - p.y > GESTURE_DISTANCE) {

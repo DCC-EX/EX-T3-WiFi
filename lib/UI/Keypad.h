@@ -21,9 +21,9 @@ class Keypad : public UI, public Events {
 
     void keyPress(uint8_t number);
   public:
-    enum class Event : uint8_t {
-      CANCEL,
-      ENTER
+    struct Event {
+      static constexpr uint8_t CANCEL = 0;
+      static constexpr uint8_t ENTER = 1;
     };
 
     Keypad(const String& label, uint16_t max, uint16_t min = 0);

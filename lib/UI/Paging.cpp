@@ -75,7 +75,7 @@ void Paging::update() {
   label += _pages;
   static_cast<Button*>(_elements[1].get())->setLabel(label);
 
-  dispatchEvent(static_cast<uint8_t>(Event::CHANGED), &_page);
+  dispatchEvent(Event::CHANGED, &_page);
 }
 
 void Paging::encoderRotate(Encoder::Rotation rotation) {

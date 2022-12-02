@@ -55,7 +55,7 @@ Keyboard::Keyboard(const String& label, const String& value) {
       TFT_WHITE,
       TFT_WHITE
     })
-    ->onRelease(std::bind(&Keyboard::dispatchEvent, this, static_cast<uint8_t>(Event::CANCEL), nullptr));
+    ->onRelease(std::bind(&Keyboard::dispatchEvent, this, Event::CANCEL, nullptr));
 
   addElement<Button>(163, 288, 157, 42, "Enter",
     Button::Appearance {
@@ -70,7 +70,7 @@ Keyboard::Keyboard(const String& label, const String& value) {
     })
     ->onRelease([this](void* parameter) {
       String value = _value->getValue();
-      dispatchEvent(static_cast<uint8_t>(Event::ENTER), &value);
+      dispatchEvent(Event::ENTER, &value);
     });
 }
 

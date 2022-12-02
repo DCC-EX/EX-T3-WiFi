@@ -17,7 +17,7 @@ UIHeader::UIHeader() {
     "/icons/menu.bmp",
     SPIFFS
   })->onRelease([this](void* parameter) {
-    dispatchEvent(static_cast<uint8_t>(Event::MENU));
+    dispatchEvent(Event::MENU);
   });
 }
 

@@ -5,17 +5,17 @@
 ProgramUI::ProgramUI(DCCExCS& dccExCS) : _dccExCS(dccExCS) {
   _elements.reserve(11);
 
-  _timeoutHandler = _dccExCS.addEventListener(static_cast<uint8_t>(DCCExCS::Event::TIMEOUT), [this](void* parameter) {
+  _timeoutHandler = _dccExCS.addEventListener(DCCExCS::Event::TIMEOUT, [this](void* parameter) {
     result("Timeout", TFT_RED);
   });
-  _writeHandler = _dccExCS.addEventListener(static_cast<uint8_t>(DCCExCS::Event::PROGRAM_WRITE), [this](void* parameter) {
+  _writeHandler = _dccExCS.addEventListener(DCCExCS::Event::PROGRAM_WRITE, [this](void* parameter) {
     if (*static_cast<int16_t*>(parameter) == -1) {
       result("Error", TFT_RED);
     } else {
       result("Success", TFT_GREEN);
     }
   });
-  _readHandler = _dccExCS.addEventListener(static_cast<uint8_t>(DCCExCS::Event::PROGRAM_READ), [this](void* parameter) {
+  _readHandler = _dccExCS.addEventListener(DCCExCS::Event::PROGRAM_READ, [this](void* parameter) {
     if (*static_cast<int16_t*>(parameter) == -1) {
       result("Error", TFT_RED);
     } else {
@@ -58,9 +58,9 @@ ProgramUI::ProgramUI(DCCExCS& dccExCS) : _dccExCS(dccExCS) {
 }
 
 ProgramUI::~ProgramUI() {
-  _dccExCS.removeEventListener(static_cast<uint8_t>(DCCExCS::Event::TIMEOUT), _timeoutHandler);
-  _dccExCS.removeEventListener(static_cast<uint8_t>(DCCExCS::Event::PROGRAM_WRITE), _writeHandler);
-  _dccExCS.removeEventListener(static_cast<uint8_t>(DCCExCS::Event::PROGRAM_READ), _readHandler);
+  _dccExCS.removeEventListener(DCCExCS::Event::TIMEOUT, _timeoutHandler);
+  _dccExCS.removeEventListener(DCCExCS::Event::PROGRAM_WRITE, _writeHandler);
+  _dccExCS.removeEventListener(DCCExCS::Event::PROGRAM_READ, _readHandler);
 }
 
 void ProgramUI::newStep(Step step, const String& title, uint16_t max, uint16_t min) {
@@ -68,10 +68,10 @@ void ProgramUI::newStep(Step step, const String& title, uint16_t max, uint16_t m
   UI::tasks.push_back([this, title, max, min]() {
     reset();
     auto keypad = std::make_unique<Keypad>(title, max, min);
-    keypad->addEventListener(static_cast<uint8_t>(Keypad::Event::ENTER), [this](void* parameter) {
+    keypad->addEventListener(Keypad::Event::ENTER, [this](void* parameter) {
       UI::tasks.push_back(std::bind(&ProgramUI::keypadEnter, this, *static_cast<uint32_t*>(parameter)));
     });
-    keypad->addEventListener(static_cast<uint8_t>(Keypad::Event::CANCEL), [this](void* parameter) {
+    keypad->addEventListener(Keypad::Event::CANCEL, [this](void* parameter) {
       UI::tasks.push_back([this]() {
         reset(true);
       });

@@ -15,8 +15,8 @@ class Paging : public UI, public Events {
     void reset();
     void update();
   public:
-    enum class Event : uint8_t {
-      CHANGED
+    struct Event {
+      static constexpr uint8_t CHANGED = 0;
     };
 
     Paging(uint8_t pages);

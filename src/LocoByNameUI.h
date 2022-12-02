@@ -17,8 +17,8 @@ class LocoByNameUI : public UI, public Events {
     void destroyButtons();
     void loadGroup(JsonArrayConst locos);
   public:
-    enum class Event : uint8_t {
-      SELECTED
+    struct Event {
+      static constexpr uint8_t SELECTED = 0;
     };
 
     LocoByNameUI(bool groups);

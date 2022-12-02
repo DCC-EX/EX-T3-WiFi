@@ -8,7 +8,7 @@
 
 LocoUI::LocoUI(DCCExCS& dccExCS, uint16_t address) : _dccExCS(dccExCS), _loco(address) {
   _elements.reserve(37);
-  _broadcastLocoHandler = _dccExCS.addEventListener(static_cast<uint8_t>(DCCExCS::Event::BROADCAST_LOCO), std::bind(&LocoUI::broadcast, this, std::placeholders::_1));
+  _broadcastLocoHandler = _dccExCS.addEventListener(DCCExCS::Event::BROADCAST_LOCO, std::bind(&LocoUI::broadcast, this, std::placeholders::_1));
 
   char path[32];
   sprintf(path, "/locos/%d.json", _loco.address);
@@ -57,7 +57,7 @@ LocoUI::LocoUI(DCCExCS& dccExCS, uint16_t address) : _dccExCS(dccExCS), _loco(ad
   if (rows > 8) { // More than 8 rows and we need paging
     uint8_t pages = divideAndCeil(rows, 7);
     auto paging = addComponent<Paging>(pages);
-    paging->addEventListener(static_cast<uint8_t>(Paging::Event::CHANGED), [this](void* parameter) {
+    paging->addEventListener(Paging::Event::CHANGED, [this](void* parameter) {
       _page = *static_cast<uint8_t*>(parameter);
       destroyFunctionButtons();
       createFunctionButtons();
@@ -68,7 +68,7 @@ LocoUI::LocoUI(DCCExCS& dccExCS, uint16_t address) : _dccExCS(dccExCS), _loco(ad
 }
 
 LocoUI::~LocoUI() {
-  _dccExCS.removeEventListener(static_cast<uint8_t>(DCCExCS::Event::BROADCAST_LOCO), _broadcastLocoHandler);
+  _dccExCS.removeEventListener(DCCExCS::Event::BROADCAST_LOCO, _broadcastLocoHandler);
 }
 
 void LocoUI::broadcast(void* parameter) {
@@ -207,16 +207,16 @@ void LocoUI::encoderPress(Encoder::ButtonPress press) {
 void LocoUI::swipe(Swipe swipe) {
   switch (swipe) {
     case Swipe::UP: {
-      dispatchEvent(static_cast<uint8_t>(Event::SWIPE_ACTION), &Settings.LocoUI.Swipe.up);
+      dispatchEvent(Event::SWIPE_ACTION, &Settings.LocoUI.Swipe.up);
     } break;
     case Swipe::DOWN: {
-      dispatchEvent(static_cast<uint8_t>(Event::SWIPE_ACTION), &Settings.LocoUI.Swipe.down);
+      dispatchEvent(Event::SWIPE_ACTION, &Settings.LocoUI.Swipe.down);
     } break;
     case Swipe::LEFT: {
-      dispatchEvent(static_cast<uint8_t>(Event::SWIPE_ACTION), &Settings.LocoUI.Swipe.left);
+      dispatchEvent(Event::SWIPE_ACTION, &Settings.LocoUI.Swipe.left);
     } break;
     case Swipe::RIGHT: {
-      dispatchEvent(static_cast<uint8_t>(Event::SWIPE_ACTION), &Settings.LocoUI.Swipe.right);
+      dispatchEvent(Event::SWIPE_ACTION, &Settings.LocoUI.Swipe.right);
     } break;
   }
 }

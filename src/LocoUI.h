@@ -10,8 +10,8 @@
 
 class LocoUI : public UI, public Events {
   public:
-    enum class Event : uint8_t {
-      SWIPE_ACTION
+    struct Event {
+      static constexpr uint8_t SWIPE_ACTION = 0;
     };
   private:
     DCCExCS& _dccExCS;

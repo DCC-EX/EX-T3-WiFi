@@ -6,7 +6,7 @@ Locos::Locos() {
 
 void Locos::change() {
   uint8_t count = _locos.size();
-  dispatchEvent(static_cast<uint8_t>(Event::COUNT_CHANGE), &count);
+  dispatchEvent(Event::COUNT_CHANGE, &count);
 }
 
 Locos::operator uint16_t() {

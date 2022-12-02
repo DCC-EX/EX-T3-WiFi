@@ -41,7 +41,7 @@ void ThrottleServer::begin() {
     if (Settings.CS.valid()) { // Save new settings as we're valid
       Settings.save();
       request->send(204);
-      Settings.dispatchEvent(static_cast<uint8_t>(SettingsClass::Event::CS_CHANGE));
+      Settings.dispatchEvent(SettingsClass::Event::CS_CHANGE);
     } else { // New settings are invalid so reload
       Settings.load();
       request->send(404);

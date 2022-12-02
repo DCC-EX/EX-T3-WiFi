@@ -15,7 +15,7 @@ WiFiUI::WiFiUI() {
   dns.start(53, THROTTLE_AP_NAME, WiFi.softAPIP());
   server.begin();
 
-  _updatedHandler = Settings.addEventListener(static_cast<uint8_t>(SettingsClass::Event::CS_CHANGE), std::bind(&WiFiUI::updated, this));
+  _updatedHandler = Settings.addEventListener(SettingsClass::Event::CS_CHANGE, std::bind(&WiFiUI::updated, this));
 
   addElement<Header>(0, 40, 320, 18, "CS Settings");
 
@@ -64,7 +64,7 @@ WiFiUI::~WiFiUI() {
   dns.stop();
   server.end();
 
-  Settings.removeEventListener(static_cast<uint8_t>(SettingsClass::Event::CS_CHANGE), _updatedHandler);
+  Settings.removeEventListener(SettingsClass::Event::CS_CHANGE, _updatedHandler);
 }
 
 void WiFiUI::loop() {
@@ -129,15 +129,15 @@ void WiFiUI::keyboard(const String& title, const String &value, void(*setting)(c
   UI::tasks.push_back([this, title, value, setting]() {
     reset();
     auto keyboard = std::make_unique<Keyboard>(title, value);
-    keyboard->addEventListener(static_cast<uint8_t>(Keyboard::Event::ENTER), [this, setting](void* parameter) {
+    keyboard->addEventListener(Keyboard::Event::ENTER, [this, setting](void* parameter) {
       setting(*static_cast<String*>(parameter));
       if (Settings.CS.valid()) {
         Settings.save();
       }
       reset(true);
-      Settings.dispatchEvent(static_cast<uint8_t>(SettingsClass::Event::CS_CHANGE));
+      Settings.dispatchEvent(SettingsClass::Event::CS_CHANGE);
     });
-    keyboard->addEventListener(static_cast<uint8_t>(Keyboard::Event::CANCEL), [this](void* parameter) {
+    keyboard->addEventListener(Keyboard::Event::CANCEL, [this](void* parameter) {
       reset(true);
     });
     _child = std::move(keyboard);
@@ -148,15 +148,15 @@ void WiFiUI::keypad(const String& title, uint16_t value, void(*setting)(uint16_t
     UI::tasks.push_back([this, title, value, setting]() {
     reset();
     auto keypad = std::make_unique<Keypad>(title, 65535, 1, value);
-    keypad->addEventListener(static_cast<uint8_t>(Keyboard::Event::ENTER), [this, setting](void* parameter) {
+    keypad->addEventListener(Keypad::Event::ENTER, [this, setting](void* parameter) {
       setting(*static_cast<uint16_t*>(parameter));
       if (Settings.CS.valid()) {
         Settings.save();
       }
       reset(true);
-      Settings.dispatchEvent(static_cast<uint8_t>(SettingsClass::Event::CS_CHANGE));
+      Settings.dispatchEvent(SettingsClass::Event::CS_CHANGE);
     });
-    keypad->addEventListener(static_cast<uint8_t>(Keyboard::Event::CANCEL), [this](void* parameter) {
+    keypad->addEventListener(Keypad::Event::CANCEL, [this](void* parameter) {
       reset(true);
     });
     _child = std::move(keypad);

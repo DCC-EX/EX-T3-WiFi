@@ -9,9 +9,10 @@ using Btn = Button;
 
 class MenuUI : public UI, public Events {
   public:
-    enum class Event : uint8_t {
-      SELECTED
+    struct Event {
+      static constexpr uint8_t SELECTED = 0;
     };
+
     enum class Button : uint8_t {
       LOCO_LOAD_BY_ADDRESS,
       LOCO_LOAD_BY_NAME,

@@ -37,9 +37,9 @@ class Keyboard : public UI, public Events {
     void changeKeyRow(uint8_t rowStart, std::vector<char>& keys);
     void addKeyToInput(void* parameter);
   public:
-    enum class Event : uint8_t {
-      CANCEL,
-      ENTER
+    struct Event {
+      static constexpr uint8_t CANCEL = 0;
+      static constexpr uint8_t ENTER = 1;
     };
 
     Keyboard(const String& label, const String& value = "");

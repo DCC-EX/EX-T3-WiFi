@@ -10,9 +10,9 @@ class Touch : Events {
     uint16_t _x, _y;
     uint16_t _w, _h;
   public:
-    enum class Event : uint8_t {
-      TOUCH,
-      RELEASE
+    struct Event {
+      static constexpr uint8_t TOUCH = 0;
+      static constexpr uint8_t RELEASE = 1;
     };
 
     Touch(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint8_t margin = 0);

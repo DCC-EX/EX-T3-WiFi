@@ -9,7 +9,7 @@ void SettingsClass::load() {
   if (error == DeserializationError::Ok) {
     CS.load(doc["cs"]);
     LocoUI.load(doc["locoui"]);
-    rotation = static_cast<Rotation>(doc["rotation"].as<uint8_t>());
+    rotation = doc["rotation"];
   }
 
   json.close();
@@ -20,7 +20,7 @@ void SettingsClass::save() {
 
   CS.save(doc["cs"] | doc.createNestedObject("cs"));
   LocoUI.save(doc["locoui"] | doc.createNestedObject("locoui"));
-  doc["rotation"] = static_cast<uint8_t>(rotation);
+  doc["rotation"] = rotation;
 
   File json = SD.open("/settings.json", FILE_WRITE);
   serializeJson(doc, json);
@@ -90,31 +90,31 @@ void SettingsClass::CS::port(uint16_t value) {
 }
 
 void SettingsClass::LocoUI::load(const JsonObject &obj) {
-  speedStep = static_cast<SpeedStep>(obj["step"].as<uint8_t>());
+  speedStep = obj["step"];
   Swipe.load(obj["swipe"]);
 }
 
 void SettingsClass::LocoUI::save(const JsonObject &obj) {
-  obj["step"] = static_cast<uint8_t>(speedStep);
+  obj["step"] = speedStep;
   Swipe.save(obj["swipe"] | obj.createNestedObject("swipe"));
 }
 
 void SettingsClass::LocoUI::Swipe::load(const JsonObject &obj) {
-  up = static_cast<Action>(obj["up"].as<uint8_t>());
-  down = static_cast<Action>(obj["down"].as<uint8_t>());
-  left = static_cast<Action>(obj["left"].as<uint8_t>());
-  right = static_cast<Action>(obj["right"].as<uint8_t>());
+  up = obj["up"];
+  down = obj["down"];
+  left = obj["left"];
+  right = obj["right"];
 
-  release = static_cast<Action>(obj["release"].as<uint8_t>());
+  release = obj["release"];
 }
 
 void SettingsClass::LocoUI::Swipe::save(const JsonObject &obj) {
-  obj["up"] = static_cast<uint8_t>(up);
-  obj["down"] = static_cast<uint8_t>(down);
-  obj["left"] = static_cast<uint8_t>(left);
-  obj["right"] = static_cast<uint8_t>(right);
+  obj["up"] = up;
+  obj["down"] = down;
+  obj["left"] = left;
+  obj["right"] = right;
 
-  obj["release"] = static_cast<uint8_t>(release);
+  obj["release"] = release;
 }
 
 SettingsClass Settings;

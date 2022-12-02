@@ -20,12 +20,12 @@ class DCCExCS : public Events {
     void createTimeout();
     void deleteTimeout();
   public:
-    enum class Event : uint8_t {
-      TIMEOUT,
-      BROADCAST_LOCO,
-      BROADCAST_POWER,
-      PROGRAM_READ,
-      PROGRAM_WRITE
+    struct Event {
+      static constexpr uint8_t TIMEOUT = 0;
+      static constexpr uint8_t BROADCAST_LOCO = 1;
+      static constexpr uint8_t BROADCAST_POWER = 2;
+      static constexpr uint8_t PROGRAM_READ = 3;
+      static constexpr uint8_t PROGRAM_WRITE = 4;
     };
 
     struct Power {

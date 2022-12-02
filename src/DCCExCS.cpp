@@ -1,7 +1,7 @@
 #include <DCCExCS.h>
 
 DCCExCS::DCCExCS(AsyncClient& csClient) : _csClient(csClient) {
-  addEventListener(static_cast<uint8_t>(Event::TIMEOUT), [this](void* parameter) {
+  addEventListener(Event::TIMEOUT, [this](void* parameter) {
     _response.matched = NULL;
   });
 }
@@ -9,7 +9,7 @@ DCCExCS::DCCExCS(AsyncClient& csClient) : _csClient(csClient) {
 void DCCExCS::createTimeout() {
   xTaskCreatePinnedToCore([](void* parameter) {
     vTaskDelay(5000 / portTICK_PERIOD_MS);
-    static_cast<DCCExCS*>(parameter)->dispatchEvent(static_cast<uint8_t>(Event::TIMEOUT));
+    static_cast<DCCExCS*>(parameter)->dispatchEvent(Event::TIMEOUT);
     vTaskDelete(NULL);
   }, "timeout", 1024 * 4, this, 1, &_timeout, 1);
 }
@@ -28,7 +28,7 @@ void DCCExCS::handleCS(uint8_t* data, uint16_t size) {
       strtol(matches[2].str().c_str(), (char**)NULL, 10),
       strtoul(matches[3].str().c_str(), (char**)NULL, 10)
     );
-    dispatchEvent(static_cast<uint8_t>(Event::BROADCAST_LOCO), &loco);
+    dispatchEvent(Event::BROADCAST_LOCO, &loco);
   } else if (std::regex_search(str, matches, std::regex("p(\\d)\\s?(\\w+)?"))) { // Power broadcast
     Power power;
 
@@ -49,7 +49,7 @@ void DCCExCS::handleCS(uint8_t* data, uint16_t size) {
       }
     }
 
-    dispatchEvent(static_cast<uint8_t>(Event::BROADCAST_POWER), &power);
+    dispatchEvent(Event::BROADCAST_POWER, &power);
   } else if (_response.matched && std::regex_search(str, matches, std::regex(_response.match))) { // Response to prog
     deleteTimeout();
     _response.matched(matches);
@@ -109,7 +109,7 @@ void DCCExCS::getLocoAddress() {
     "r (-?\\d+)",
     [this](std::smatch &matches) {
       int16_t result = strtol(matches[1].str().c_str(), (char**)NULL, 10);
-      dispatchEvent(static_cast<uint8_t>(DCCExCS::Event::PROGRAM_READ), &result);
+      dispatchEvent(DCCExCS::Event::PROGRAM_READ, &result);
     }
   };
 
@@ -127,7 +127,7 @@ void DCCExCS::setLocoAddress(uint16_t address) {
         result = 1;
       }
 
-      dispatchEvent(static_cast<uint8_t>(DCCExCS::Event::PROGRAM_WRITE), &result);
+      dispatchEvent(DCCExCS::Event::PROGRAM_WRITE, &result);
     }
   };
 
@@ -147,7 +147,7 @@ void DCCExCS::getLocoCVByte(uint16_t cv) {
         result = strtol(matches[2].str().c_str(), (char**)NULL, 10);
       }
 
-      dispatchEvent(static_cast<uint8_t>(DCCExCS::Event::PROGRAM_READ), &result);
+      dispatchEvent(DCCExCS::Event::PROGRAM_READ, &result);
     }
   };
 
@@ -168,7 +168,7 @@ void DCCExCS::setLocoCVByte(uint16_t cv, uint8_t value) {
         result = 1;
       }
 
-      dispatchEvent(static_cast<uint8_t>(DCCExCS::Event::PROGRAM_WRITE), &result);
+      dispatchEvent(DCCExCS::Event::PROGRAM_WRITE, &result);
     }
   };
 
@@ -189,7 +189,7 @@ void DCCExCS::getLocoCVBit(uint16_t cv, uint8_t bit) {
         result = (value >> bit) & 1;
       }
 
-      dispatchEvent(static_cast<uint8_t>(DCCExCS::Event::PROGRAM_READ), &result);
+      dispatchEvent(DCCExCS::Event::PROGRAM_READ, &result);
     }
   };
 
@@ -211,7 +211,7 @@ void DCCExCS::setLocoCVBit(uint16_t cv, uint8_t bit, bool value) {
         result = 1;
       }
 
-      dispatchEvent(static_cast<uint8_t>(DCCExCS::Event::PROGRAM_WRITE), &result);
+      dispatchEvent(DCCExCS::Event::PROGRAM_WRITE, &result);
     }
   };
 

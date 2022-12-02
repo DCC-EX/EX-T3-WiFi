@@ -58,7 +58,7 @@ void LocoByNameUI::drawPagingAndButtons() {
   if (count > 8) { // If there's more than 8 buttons we need paging
     uint8_t pages = divideAndCeil(count, 8);
     auto paging = addComponent<Paging>(pages);
-    paging->addEventListener(static_cast<uint8_t>(Paging::Event::CHANGED), [this](void* parameter) {
+    paging->addEventListener(Paging::Event::CHANGED, [this](void* parameter) {
       destroyButtons();
       drawButtons(*static_cast<uint8_t*>(parameter));
     });
@@ -84,7 +84,7 @@ void LocoByNameUI::drawButtons(uint8_t page) {
               loadGroup(btn["locos"].as<JsonArrayConst>());
             } else {
               uint16_t address = btn["loco"].as<uint16_t>();
-              dispatchEvent(static_cast<uint8_t>(Event::SELECTED), &address);
+              dispatchEvent(Event::SELECTED, &address);
             }
           });
         });

@@ -8,15 +8,15 @@
 
 class SettingsClass : public Events {
   public:
-    enum class Event : uint8_t {
-      CS_CHANGE,
-      ROTATION_CHANGE
+    struct Event {
+      static constexpr uint8_t CS_CHANGE = 0;
+      static constexpr uint8_t ROTATION_CHANGE = 1;
     };
-    enum class Rotation : uint8_t {
-      STANDARD,
-      INVERTED,
+    struct Rotation {
+      static constexpr uint8_t STANDARD = 0;
+      static constexpr uint8_t INVERTED = 1;
       #if defined(USE_ACCELEROMETER)
-      ACCELEROMETER
+      static constexpr uint8_t ACCELEROMETER = 2;
       #endif
     };
   public:
@@ -62,13 +62,13 @@ class SettingsClass : public Events {
         void load(const JsonObject &obj);
         void save(const JsonObject &obj);
       public:
-        enum class SpeedStep : uint8_t {
-          STEP_1,
-          STEP_2,
-          STEP_4
+        struct SpeedStep {
+          static constexpr uint8_t STEP_1 = 0;
+          static constexpr uint8_t STEP_2 = 1;
+          static constexpr uint8_t STEP_4 = 2;
         };
 
-        SpeedStep speedStep = SpeedStep::STEP_1;
+        uint8_t speedStep = SpeedStep::STEP_1;
 
         struct Swipe {
           friend class SettingsClass::LocoUI;
@@ -77,25 +77,25 @@ class SettingsClass : public Events {
             void load(const JsonObject &obj);
             void save(const JsonObject &obj);
           public:
-            enum class Action : uint8_t {
-              KEYPAD,
-              NAME,
-              GROUP,
-              NEXT,
-              PREV,
-              RELEASE,
+            struct Action {
+              static constexpr uint8_t KEYPAD = 0;
+              static constexpr uint8_t NAME = 1;
+              static constexpr uint8_t GROUP = 2;
+              static constexpr uint8_t NEXT = 3;
+              static constexpr uint8_t PREV = 4;
+              static constexpr uint8_t RELEASE = 5;
             };
 
-            Action up = Action::RELEASE;
-            Action down = Action::KEYPAD;
-            Action left = Action::NEXT;
-            Action right = Action::PREV;
+            uint8_t up = Action::RELEASE;
+            uint8_t down = Action::KEYPAD;
+            uint8_t left = Action::NEXT;
+            uint8_t right = Action::PREV;
 
-            Action release = Action::KEYPAD;
+            uint8_t release = Action::KEYPAD;
         } Swipe;
     } LocoUI;
 
-    Rotation rotation = Rotation::STANDARD;
+    uint8_t rotation = Rotation::STANDARD;
 };
 
 extern SettingsClass Settings;

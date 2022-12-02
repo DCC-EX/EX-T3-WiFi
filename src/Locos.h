@@ -6,8 +6,8 @@
 
 class Locos : public Events {
   public:
-    enum class Event : uint8_t {
-      COUNT_CHANGE
+    struct Event {
+      static constexpr uint8_t COUNT_CHANGE = 0;
     };
   private:
     std::vector<uint16_t> _locos;

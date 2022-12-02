@@ -24,7 +24,7 @@ Keypad::Keypad(const String& label, uint16_t max, uint16_t min, uint16_t* value)
       TFT_WHITE,
       TFT_WHITE
     })
-    ->onRelease(std::bind(&Keypad::dispatchEvent, this, static_cast<uint8_t>(Event::CANCEL), nullptr));
+    ->onRelease(std::bind(&Keypad::dispatchEvent, this, Event::CANCEL, nullptr));
 
   addElement<Button>(163, 150, 157, 42, "Enter",
     Button::Appearance {
@@ -40,7 +40,7 @@ Keypad::Keypad(const String& label, uint16_t max, uint16_t min, uint16_t* value)
     ->onRelease([this](void* parameter) {
       uint32_t valid = getNumber();
       if (valid >= _minValue && valid <= _maxValue) {
-        dispatchEvent(static_cast<uint8_t>(Event::ENTER), &valid);
+        dispatchEvent(Event::ENTER, &valid);
       }
     });
 
