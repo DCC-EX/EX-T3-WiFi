@@ -35,7 +35,7 @@ uint16_t Locos::remove() {
 
   auto it = std::find(_locos.begin(), _locos.end(), address);
   if (it != _locos.end()) {
-    _active = _locos.erase(it) - _locos.begin();
+    _active = std::min<uint16_t>(_locos.erase(it) - _locos.begin(), _locos.size() - 1);
   }
 
   change();
