@@ -1,18 +1,24 @@
 # Throttle Setup
 
-To connect the throttle to the CS you'll need to start the WiFi server on the throttle, this is done from the main menu by touching the **T3 Web Server** button.
+> To manage locos, groups, icons & CS settings you'll need to be on the **T3 WiFi** display so the throttle website is accessible.
 
-The display will update and show it's WiFi details, you'll need to connect to this to setup.
+---
+
+To connect the throttle to the CS you'll need to enter the WiFi settings, this is done from the **T3 WiFi** button on the main menu.
+
+When on the **T3 WiFi** display you can touch any of the **CS Settings** labels to show a keyboard/keypad where you can enter the settings directly.
+
+You can also connect to the throttles own WiFi and website (**AP Settings**) where you can enter the **CS Settings**.
 
 <p align="center">
   <img src="imgs/throttle-server.png" width="300">
 </p>
 
 ## CS Settings
-* SSID - The SSID of the WiFi network the CS is on.
-* Password - The WiFi network password, if set.
-* Server - The CS server address. This can be a hostname or IP.
-* Port - The CS port.
+* SSID - The SSID of the WiFi network the CS is on *(Touch to show a keyboard)*.
+* Password - The WiFi network password, if set *(Touch to show a keyboard)*.
+* Server - The CS server address. This can be a hostname or IP *(Touch to show a keyboard)*.
+* Port - The CS port *(Touch to show a keypad)*.
 
 ## Throttle AP Settings
 * SSID - This is the SSID of the throttle WiFi.
@@ -24,8 +30,13 @@ The QR code can be swipped left/right to provide a different QR code which will 
 
 > If you don't have smartphone you'll need access to a computer with WiFi so you can connect.
 
-Open a web brower and type the throttle address.\
-Once on the throttle web page go to the **Settings** tab.\
+---
+
+When the throttle is connected to your local WiFi or you're connected to the throttles own WiFi you can load the management website. 
+
+Open a web brower and type the throttle address.
+
+If you still need to enter the CS settings go to the **Settings** tab.\
 Depending on how you setup your **Command Station** you'll need to enter the **SSID** and **password** of your local WiFi or the **CS** WiFi.
 
 * **If your CS is connected to your local WiFi**\

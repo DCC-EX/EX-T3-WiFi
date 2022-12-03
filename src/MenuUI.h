@@ -28,22 +28,23 @@ class MenuUI : public UI, public Events {
       POWER_OFF_PROG,
       POWER_ON_PROG,
       POWER_JOIN,
-      SERVER,
+      WIFI,
       SETTINGS
     };
   private:
-    DCCExCS::Power& power;
+    DCCExCS& _dccExCS;
+    DCCExCS::Power& _power;
+    uint8_t _broadcastPowerHandler;
 
-    Btn* powerAll;
-    Btn* powerMain;
-    Btn* powerProg;
-    Btn* powerJoin;
+    Btn* _powerAll;
+    Btn* _powerMain;
+    Btn* _powerProg;
+    Btn* _powerJoin;
 
     void selected(Button button);
   public:
-    MenuUI(DCCExCS::Power& power);
-
-    void csPowerChange();
+    MenuUI(DCCExCS& dccExCS, DCCExCS::Power& power);
+    ~MenuUI();
 };
 
 #endif

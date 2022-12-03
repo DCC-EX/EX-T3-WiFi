@@ -116,7 +116,7 @@ void setLocoUI() {
               ) && locos == 0) {
             setMenuUI();
           } else {
-            (dynamic_cast<LocoUI*>(activeUI.get()))->dispatchEvent(LocoUI::Event::SWIPE_ACTION, &Settings.LocoUI.Swipe.release);
+            (static_cast<LocoUI*>(activeUI.get()))->dispatchEvent(LocoUI::Event::SWIPE_ACTION, &Settings.LocoUI.Swipe.release);
           }
         } break;
         case SettingsClass::LocoUI::Swipe::Action::NEXT: {
@@ -150,7 +150,7 @@ void setAccessoryKeypadUI(bool state) {
 
 void setMenuUI() {
   setUI([]() {
-    auto ui = std::make_unique<MenuUI>(power);
+    auto ui = std::make_unique<MenuUI>(dccExCS, power);
     ui->addEventListener(MenuUI::Event::SELECTED, [](void* parameter) {
       switch (const auto button = *static_cast<MenuUI::Button*>(parameter)) {
         case MenuUI::Button::LOCO_LOAD_BY_ADDRESS: {
@@ -194,7 +194,7 @@ void setMenuUI() {
         case MenuUI::Button::POWER_JOIN: {
           dccExCS.setCSPower(DCCExCS::Power::JOIN, true);
         } break;
-        case MenuUI::Button::SERVER: {
+        case MenuUI::Button::WIFI: {
           setUI([]() {
             return std::make_unique<WiFiUI>();
           });
@@ -391,13 +391,6 @@ void setup() {
   // CS Power event
   dccExCS.addEventListener(DCCExCS::Event::BROADCAST_POWER, [](void* parameter) {
     power = *static_cast<DCCExCS::Power*>(parameter); // Remember current power states
-
-    auto menu = dynamic_cast<MenuUI*>(activeUI.get());
-    if (menu != nullptr) { // If the current UI is the menu then update the power button states
-      UI::tasks.push_back([menu]() {
-        menu->csPowerChange();
-      });
-    }
   });
 
   // If the CS settings change we disconnect so the keep alive task will reconnect using new values
