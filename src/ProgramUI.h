@@ -9,40 +9,37 @@ class ProgramUI : public UI {
   public:
     enum class Step : uint8_t {
       WRITE_ADDRESS_GET_ADDRESS,
+
+      READ_CV_BYTE_GET_CV,
       WRITE_CV_BYTE_GET_CV,
       WRITE_CV_BYTE_GET_VALUE,
+
+      READ_CV_BIT_GET_CV,
+      READ_CV_BIT_GET_BIT,
       WRITE_CV_BIT_GET_CV,
       WRITE_CV_BIT_GET_BIT,
       WRITE_CV_BIT_GET_VALUE,
-      READ_CV_BYTE_GET_CV,
-
+      
       ACK_LIMIT,
       ACK_MIN,
       ACK_MAX
     };
   private:
-    DCCExCS *_dccExCS;
+    DCCExCS& _dccExCS;
     uint16_t _timeoutHandler;
     uint16_t _writeHandler;
     uint16_t _readHandler;
     Step _step;
     uint16_t _stepData[2];
-    std::unique_ptr<Keypad> _keypad;
 
-    void buildUI();
-    void clearUI();
-    void newStep(Step step, const char *title, uint16_t max, uint16_t min);
-    void keyPadEnter();
+    void newStep(Step step, const String& title, uint16_t max, uint16_t min);
+    void keypadEnter(uint32_t number);
+    void confirm(const String& message, Events::EventCallback&& callback);
     void working();
-    void result(const char *label, uint16_t color);
+    void result(const String& message, uint16_t color);
   public:
-    ProgramUI(TFT_eSPI *tft, Tasks *tasks, DCCExCS *dccExCS);
+    ProgramUI(DCCExCS& dccExCS);
     ~ProgramUI();
-    
-    void rotated();
-    
-    void touch(uint8_t count, GTPoint* points);
-    void release(uint8_t count, GTPoint* points);
 };
 
 #endif

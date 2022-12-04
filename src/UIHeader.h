@@ -1,11 +1,17 @@
 #ifndef STATUS_BAR_H
 #define STATUS_BAR_H
 
-#include <TFT_eSPI.h>
-#include <Touch.h>
+#include <UI.h>
+#include <Events.h>
+#include <Elements/Image.h>
+#include <Elements/Button.h>
 #include <Elements/Label.h>
 
-class UIHeader {
+class UIHeader : public UI, public Events {
+  public:
+    struct Event {
+      static constexpr uint8_t MENU = 0;
+    };
   private:
     enum class PowerStatus : uint8_t {
       STATUS_CHARGING,
@@ -15,9 +21,10 @@ class UIHeader {
       STATUS_HIGH
     };
 
-    TFT_eSPI *_tft;
-    std::unique_ptr<Touch> _menu;
-    std::unique_ptr<Label> _locos;
+    Image* _power;
+    Image* _wifi;
+    Image* _cs;
+    Label* _locos;
     
     PowerStatus _powerStatus = PowerStatus::STATUS_HIGH;
     bool _wifiStatus = false;
@@ -29,10 +36,8 @@ class UIHeader {
     void updateCSStatus();
     void updateLocoCount();
   public:
-    UIHeader(TFT_eSPI *tft);
+    UIHeader();
 
-    void draw();
-    bool menuTouch(uint16_t x, uint16_t y);
     void setPowerStatus(float voltage);
     void setWiFiStatus(bool connected);
     void setCSStatus(bool connected);

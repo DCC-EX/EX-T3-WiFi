@@ -1,8 +1,8 @@
-#include <Img/Img.h>
+#include <Img/ImgHandler.h>
 #include <Img/BMP.h>
 
-Img* Img::load(fs::File img) {
-  char *ext = strchr(img.name(), '.');
+ImgHandler* ImgHandler::load(fs::File img) {
+  char* ext = strchr(img.name(), '.');
 
   if (ext != NULL) {
     if (strcmp(ext, ".bmp") == 0) {
@@ -17,14 +17,14 @@ Img* Img::load(fs::File img) {
   return nullptr;
 }
 
-Img::Img(fs::File img) : _img(img) { }
+ImgHandler::ImgHandler(fs::File img) : _img(img) { }
 
-Img::Img(fs::File img, TFT_eSPI *tft, int16_t x, int16_t y) : Img(img) { }
+ImgHandler::ImgHandler(fs::File img, TFT_eSPI* tft, int16_t x, int16_t y) : ImgHandler(img) { }
 
-Img::~Img() {
+ImgHandler::~ImgHandler() {
   _img.close();
 }
 
-Img::operator bool() const {
+ImgHandler::operator bool() const {
   return _img;
 }

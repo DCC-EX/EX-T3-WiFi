@@ -10,32 +10,29 @@
 
 class LocoUI : public UI, public Events {
   public:
-    enum class Event : uint8_t {
-      SWIPE_ACTION
+    struct Event {
+      static constexpr uint8_t SWIPE_ACTION = 0;
     };
   private:
-    DCCExCS *_dccExCS;
+    DCCExCS& _dccExCS;
     DCCExCS::Loco _loco;
     uint8_t _broadcastLocoHandler;
 
-    Label *_labelSpeed;
-    Label *_labelDirection;
+    Label* _labelSpeed;
+    Label* _labelDirection;
 
     StaticJsonDocument<10240> _locoDoc;
     JsonArrayConst _locoFunctions;
-    std::unique_ptr<Paging> _paging;
+    uint8_t _page = 1;
 
-    void broadcast(void *parameter);
+    void broadcast(void* parameter);
     void createFunctionButtons();
     void destroyFunctionButtons();
     void toggleFunctionButtons(std::bitset<32> toggle);
   public:
-    LocoUI(TFT_eSPI *tft, Tasks *tasks, DCCExCS *dccExCS, uint16_t address);
+    LocoUI(DCCExCS& dccExCS, uint16_t address);
     ~LocoUI();
 
-    void rotated();
-    void touch(uint8_t count, GTPoint* points);
-    void release(uint8_t count, GTPoint* points);
     void encoderRotate(Encoder::Rotation rotation);
     void encoderPress(Encoder::ButtonPress press);
     void swipe(Swipe swipe);

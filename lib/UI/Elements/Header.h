@@ -5,8 +5,8 @@
 
 class Header : public Label {
   public:
-    Header(TFT_eSPI *tft, uint16_t x, uint16_t y, uint16_t w, uint16_t h,
-           const String &label, uint16_t color = TFT_WHITE);
+    Header(uint16_t x, uint16_t y, uint16_t w, uint16_t h,
+           const String& label, uint16_t color = TFT_WHITE);
 
     void draw();
 };
