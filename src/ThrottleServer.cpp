@@ -53,31 +53,32 @@ void ThrottleServer::begin() {
     JsonVariant& list = response->getRoot();
 
     File listDir = SD.open(request->pathArg(0));
-    File listFile;
+    if (listDir) {
+      File listFile;
+      if (strcmp(listDir.name(), "icons") == 0) {
+        while ((listFile = listDir.openNextFile())) {
+          if (!listFile.isDirectory()) {
+            list.add(String(listFile.path()));
+          }
+        }
+      } else {
+        StaticJsonDocument<16> filterDoc;
+        filterDoc["name"] = true;
+        StaticJsonDocument<48> doc;
 
-    if (strcmp(listDir.name(), "icons") == 0) {
-      while ((listFile = listDir.openNextFile())) {
-        if (!listFile.isDirectory()) {
-          list.add(String(listFile.path()));
+        while ((listFile = listDir.openNextFile())) {
+          if (!listFile.isDirectory()) {
+            ReadBufferingStream bufferedFile(listFile, doc.capacity());
+            deserializeJson(doc, bufferedFile, DeserializationOption::Filter(filterDoc));
+            JsonObject item = list.createNestedObject();
+            item["file"] = String(listFile.path());
+            item["name"] = String(doc["name"].as<const char*>());
+            listFile.close();
+          }
         }
       }
-    } else {
-      StaticJsonDocument<16> filterDoc;
-      filterDoc["name"] = true;
-      StaticJsonDocument<48> doc;
-
-      while ((listFile = listDir.openNextFile())) {
-        if (!listFile.isDirectory()) {
-          ReadBufferingStream bufferedFile(listFile, doc.capacity());
-          deserializeJson(doc, bufferedFile, DeserializationOption::Filter(filterDoc));
-          JsonObject item = list.createNestedObject();
-          item["file"] = String(listFile.path());
-          item["name"] = String(doc["name"].as<const char*>());
-          listFile.close();
-        }
-      }
+      listDir.close();
     }
-    listDir.close();
 
     response->setLength();
     request->send(response);
@@ -106,7 +107,7 @@ void ThrottleServer::begin() {
 
   }, NULL, [](AsyncWebServerRequest* request, uint8_t* data, size_t len, size_t index, size_t total) {
     if (!request->_tempFile) {
-      request->_tempFile = SD.open(request->url(), "w");
+      request->_tempFile = SD.open(request->url(), "w", true);
     }
 
     request->_tempFile.write(data, len);
