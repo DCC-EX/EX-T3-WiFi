@@ -1,0 +1,3 @@
+data/www/bs.min.css -linguist-vendored
+data/www/vue.global.js -linguist-vendored
+data/www/vue.global.prod.js -linguist-vendored
