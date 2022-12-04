@@ -7,7 +7,7 @@
 
 class Events {
   public:
-    using EventCallback = std::function<void(void *parameter)>;
+    using EventCallback = std::function<void(void* parameter)>;
   private:
     struct EventHandler {
       EventCallback cb;
@@ -16,11 +16,9 @@ class Events {
     std::map<uint8_t, std::vector<EventHandler>> _events;
     uint16_t _count = 0;
   public:
-    virtual ~Events() = default;
-
-    uint16_t addEventListener(uint8_t event, const EventCallback &&callback);
+    uint16_t addEventListener(uint8_t event, const EventCallback&& callback);
     void removeEventListener(uint8_t event, uint16_t handler);
-    void dispatchEvent(uint8_t event, void *parameter = nullptr);
+    void dispatchEvent(uint8_t event, void* parameter = nullptr);
 };
 
 #endif

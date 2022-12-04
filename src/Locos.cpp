@@ -6,7 +6,7 @@ Locos::Locos() {
 
 void Locos::change() {
   uint8_t count = _locos.size();
-  dispatchEvent(static_cast<uint8_t>(Event::COUNT_CHANGE), &count);
+  dispatchEvent(Event::COUNT_CHANGE, &count);
 }
 
 Locos::operator uint16_t() {
@@ -35,7 +35,7 @@ uint16_t Locos::remove() {
 
   auto it = std::find(_locos.begin(), _locos.end(), address);
   if (it != _locos.end()) {
-    _active = _locos.erase(it) - _locos.begin();
+    _active = std::min<uint16_t>(_locos.erase(it) - _locos.begin(), _locos.size() - 1);
   }
 
   change();

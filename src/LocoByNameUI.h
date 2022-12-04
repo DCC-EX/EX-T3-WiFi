@@ -10,25 +10,18 @@ class LocoByNameUI : public UI, public Events {
   private:
     StaticJsonDocument<4096> _doc;
     JsonArray _btnsDoc;
-    uint8_t _count = 0;
-    std::unique_ptr<Paging> _paging;
-  public:
-    enum class Event : uint8_t {
-      SELECTED
-    };
 
-    LocoByNameUI(TFT_eSPI *tft, Tasks *tasks, bool groups);
-
-    void addLoco(File loco);
+    void addLoco(File& loco);
     void drawPagingAndButtons();
-    void drawButtons();
+    void drawButtons(uint8_t page = 1);
     void destroyButtons();
     void loadGroup(JsonArrayConst locos);
+  public:
+    struct Event {
+      static constexpr uint8_t SELECTED = 0;
+    };
 
-    void rotated();
-    void touch(uint8_t count, GTPoint* points);
-    void release(uint8_t count, GTPoint* points);
-    void encoderRotate(Encoder::Rotation rotation);
+    LocoByNameUI(bool groups);
 };
 
 #endif

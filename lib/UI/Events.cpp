@@ -1,7 +1,6 @@
 #include <Events.h>
-#include <algorithm>
 
-uint16_t Events::addEventListener(uint8_t event, const EventCallback &&callback) {
+uint16_t Events::addEventListener(uint8_t event, const EventCallback&& callback) {
   return _events[event].emplace_back(EventHandler { callback, _count++ }).id;
 }
 
@@ -16,8 +15,8 @@ void Events::removeEventListener(uint8_t event, uint16_t handler) {
   );
 }
 
-void Events::dispatchEvent(uint8_t event, void *parameter) {
-  for (const auto &handler : _events[event]) {
+void Events::dispatchEvent(uint8_t event, void* parameter) {
+  for (const auto& handler : _events[event]) {
     handler.cb(parameter);
   }
 }

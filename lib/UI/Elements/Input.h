@@ -6,18 +6,18 @@
 class Input : public Element {
   private:
     const uint16_t BG_COLOR = TFT_LIGHTGREY;
-    String _text;
+    String _value;
   protected:
-    void drawText();
+    void drawText(bool rect = true);
   public:
-    Input(TFT_eSPI *tft, uint16_t x, uint16_t y, uint16_t w, uint16_t h);
+    Input(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const String& value = "");
     
     void draw();
     void add(const char c);
     void backspace();
     void clear();
-    String get();
-    void set(const String &str);
+    String getValue() const;
+    void setValue(const String& value);
     uint8_t length();
 };
 

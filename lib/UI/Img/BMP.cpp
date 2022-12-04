@@ -1,8 +1,8 @@
 #include <Img/BMP.h>
 
-BMP::BMP(fs::File bmp) : Img(bmp) { }
+BMP::BMP(fs::File bmp) : ImgHandler(bmp) { }
 
-BMP::BMP(fs::File bmp, TFT_eSPI *tft, int16_t x, int16_t y) : BMP(bmp) {
+BMP::BMP(fs::File bmp, TFT_eSPI* tft, int16_t x, int16_t y) : BMP(bmp) {
   draw(tft, x, y);
 }
 
@@ -18,7 +18,7 @@ uint32_t BMP::read32() {
   return result;
 }
 
-bool BMP::dimensions(uint32_t &w, uint32_t &h) {
+bool BMP::dimensions(uint32_t& w, uint32_t& h) {
   if (read16() == 0x4D42) {
     _img.seek(18);
     w = read32();
@@ -29,7 +29,7 @@ bool BMP::dimensions(uint32_t &w, uint32_t &h) {
   return false;
 }
 
-bool BMP::draw(TFT_eSPI *tft, int16_t x, int16_t y) {
+bool BMP::draw(TFT_eSPI* tft, int16_t x, int16_t y) {
   if ((x >= tft->width()) || (y >= tft->height())) {
     return false;
   }

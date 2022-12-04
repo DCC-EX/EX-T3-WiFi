@@ -9,23 +9,23 @@
 
 class DCCExCS : public Events {
   private:
-    AsyncClient *_csClient;
+    AsyncClient& _csClient;
     TaskHandle_t _timeout;
 
     struct {
-      const char *match;
+      const char* match;
       std::function<void (std::smatch &matches)> matched;
     } _response;
     
     void createTimeout();
     void deleteTimeout();
   public:
-    enum class Event : uint8_t {
-      TIMEOUT,
-      BROADCAST_LOCO,
-      BROADCAST_POWER,
-      PROGRAM_READ,
-      PROGRAM_WRITE
+    struct Event {
+      static constexpr uint8_t TIMEOUT = 0;
+      static constexpr uint8_t BROADCAST_LOCO = 1;
+      static constexpr uint8_t BROADCAST_POWER = 2;
+      static constexpr uint8_t PROGRAM_READ = 3;
+      static constexpr uint8_t PROGRAM_WRITE = 4;
     };
 
     struct Power {
@@ -58,25 +58,31 @@ class DCCExCS : public Events {
             direction((speedCode & 0x80) == 128), functions(functions) { }
     };
 
-    DCCExCS(AsyncClient *csClient);
+    DCCExCS(AsyncClient& csClient);
 
-    void handleCS(uint8_t *data, uint16_t size);
-    void setCSPower(uint8_t power, bool state);
+    void handleCS(uint8_t* data, uint16_t size);
+    
     void getCSPower();
+    void setCSPower(uint8_t power, bool state);
+
     void emergencyStopAll();
     void acquireLoco(uint16_t address);
     void releaseLoco(uint16_t address);
     void setLocoThrottle(uint16_t address, int8_t speed, uint8_t direction);
     void setLocoFn(uint16_t address, uint8_t fn, bool state);
-    void writeLocoAddress(uint16_t address);
-    void readLocoAddress();
-    void writeLocoCVByte(uint16_t cv, uint8_t value);
-    void readLocoCVByte(uint16_t cv);
-    void writeLocoCVBit(uint16_t cv, uint8_t bit, bool value);
+
+    void getLocoAddress();
+    void setLocoAddress(uint16_t address);
+    void getLocoCVByte(uint16_t cv);
+    void setLocoCVByte(uint16_t cv, uint8_t value);
+    void getLocoCVBit(uint16_t cv, uint8_t bit);
+    void setLocoCVBit(uint16_t cv, uint8_t bit, bool value);
+
+    void accessory(uint16_t address, bool state);
+
     void setAckLimit(uint16_t limit);
     void setAckMin(uint16_t min);
     void setAckMax(uint16_t max);
-    void accessory(uint16_t address, bool state);
 };
 
 #endif
