@@ -5,9 +5,6 @@ from urllib.parse import parse_qs
 import os, json
 
 class MyHandler(SimpleHTTPRequestHandler):
-  # def __init__(self, *args, **kwargs):
-    # super().__init__(*args, directory=os.getcwd(), **kwargs)
-
   def translate_path(self, path):
     if os.path.exists(os.getcwd() + '\\data\\www\\' + path):
       return os.getcwd() + '\\data\\www\\' + path
@@ -30,23 +27,27 @@ class MyHandler(SimpleHTTPRequestHandler):
       path = 'index.html'
 
     if path == '/locos':
-      enum = os.scandir(os.getcwd() + '\\sd\\locos')
-      fns = []
-      for fn in enum:
-        if fn.is_file() and fn.name.endswith(".json"):
-          with open(fn.path, "r") as read_file:
-            data = json.load(read_file)
-            fns.append({ 'file': '/locos/' + fn.name, 'name': data['name'] })
-      self.json(json.dumps(fns))
+      locos = []
+      path = os.getcwd() + '\\sd\\locos'
+      if os.path.exists(path):
+        enum = os.scandir(path)
+        for loco in enum:
+          if loco.is_file() and loco.name.endswith(".json"):
+            with open(loco.path, "r") as read_file:
+              data = json.load(read_file)
+              locos.append({ 'file': '/locos/' + loco.name, 'name': data['name'] })
+      self.json(json.dumps(locos))
       return
     elif path == '/fns':
-      enum = os.scandir(os.getcwd() + '\\sd\\fns')
       fns = []
-      for fn in enum:
-        if fn.is_file() and fn.name.endswith(".json"):
-          with open(fn.path, "r") as read_file:
-            data = json.load(read_file)
-            fns.append({ 'file': '/fns/' + fn.name, 'name': data['name'] })
+      path = os.getcwd() + '\\sd\\fns'
+      if os.path.exists(path):
+        enum = os.scandir(path)
+        for fn in enum:
+          if fn.is_file() and fn.name.endswith(".json"):
+            with open(fn.path, "r") as read_file:
+              data = json.load(read_file)
+              fns.append({ 'file': '/fns/' + fn.name, 'name': data['name'] })
       self.json(json.dumps(fns))
       return
     elif path == '/icons':
@@ -75,7 +76,10 @@ class MyHandler(SimpleHTTPRequestHandler):
       content_length = int(self.headers.get('Content-Length'))
       body = self.rfile.read(content_length)
 
-      f = open(os.getcwd() + '\\sd' + path, 'wb')
+      path = os.getcwd() + '\\sd' + path
+      os.makedirs(os.path.dirname(path), exist_ok=True)
+    
+      f = open(path, 'wb')
       f.write(body)
       f.close()
 
