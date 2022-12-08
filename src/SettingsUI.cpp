@@ -21,23 +21,23 @@ SettingsUI::SettingsUI() {
 
   addElement<Label>(0, 133, 130, 18, "Swipe Up:");
   addElement<Button>(170, 119, 150, 42, _swipActionLabels[Settings.LocoUI.Swipe.up])
-    ->onRelease(std::bind(&SettingsUI::swipeAction, this, std::placeholders::_1, Settings.LocoUI.Swipe.up, 5));
+    ->onRelease(std::bind(&SettingsUI::swipeAction, this, std::placeholders::_1, std::ref(Settings.LocoUI.Swipe.up), 5));
 
   addElement<Label>(0, 182, 130, 18, "Swipe Down:");
   addElement<Button>(170, 168, 150, 42, _swipActionLabels[Settings.LocoUI.Swipe.down])
-    ->onRelease(std::bind(&SettingsUI::swipeAction, this, std::placeholders::_1, Settings.LocoUI.Swipe.down, 5));
+    ->onRelease(std::bind(&SettingsUI::swipeAction, this, std::placeholders::_1, std::ref(Settings.LocoUI.Swipe.down), 5));
 
   addElement<Label>(0, 231, 130, 18, "Swipe Left:");
   addElement<Button>(170, 217, 150, 42, _swipActionLabels[Settings.LocoUI.Swipe.left])
-    ->onRelease(std::bind(&SettingsUI::swipeAction, this, std::placeholders::_1, Settings.LocoUI.Swipe.left, 5));
+    ->onRelease(std::bind(&SettingsUI::swipeAction, this, std::placeholders::_1, std::ref(Settings.LocoUI.Swipe.left), 5));
 
   addElement<Label>(0, 280, 130, 18, "Swipe Right:");
   addElement<Button>(170, 266, 150, 42, _swipActionLabels[Settings.LocoUI.Swipe.right])
-    ->onRelease(std::bind(&SettingsUI::swipeAction, this, std::placeholders::_1, Settings.LocoUI.Swipe.right, 5));
+    ->onRelease(std::bind(&SettingsUI::swipeAction, this, std::placeholders::_1, std::ref(Settings.LocoUI.Swipe.right), 5));
 
   addElement<Label>(0, 329, 130, 18, "After Swipe Release:");
   addElement<Button>(170, 315, 150, 42, _swipActionLabels[Settings.LocoUI.Swipe.release])
-    ->onRelease(std::bind(&SettingsUI::swipeAction, this, std::placeholders::_1, Settings.LocoUI.Swipe.release, 4));
+    ->onRelease(std::bind(&SettingsUI::swipeAction, this, std::placeholders::_1, std::ref(Settings.LocoUI.Swipe.release), 4));
 
   addElement<Header>(0, 369, 320, 18, "Screen Rotation");
 
