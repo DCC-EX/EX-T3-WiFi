@@ -16,27 +16,41 @@ MenuUI::MenuUI(DCCExCS& dccExCS, DCCExCS::Power& power) : _dccExCS(dccExCS), _po
   addElement<Header>(0, 40, 320, 18, "Loco");
 
   addElement<Btn>(0, 70, 102, 42, "By Address")
-    ->onRelease(std::bind(&MenuUI::selected, this, Button::LOCO_LOAD_BY_ADDRESS));
+    ->onRelease([this](void*) {
+      selected(Button::LOCO_LOAD_BY_ADDRESS);
+    });
 
   addElement<Btn>(109, 70, 102, 42, "By Name")
-    ->onRelease(std::bind(&MenuUI::selected, this, Button::LOCO_LOAD_BY_NAME));
+    ->onRelease([this](void*) {
+      selected(Button::LOCO_LOAD_BY_NAME);
+    });
 
   addElement<Btn>(218, 70, 102, 42, "By Group")
-    ->onRelease(std::bind(&MenuUI::selected, this, Button::LOCO_LOAD_BY_GROUP));
+    ->onRelease([this](void*) {
+      selected(Button::LOCO_LOAD_BY_GROUP);
+    });
 
   addElement<Btn>(0, 119, 157, 42, "Release")
-    ->onRelease(std::bind(&MenuUI::selected, this, Button::LOCO_RELEASE));
+    ->onRelease([this](void*) {
+      selected(Button::LOCO_RELEASE);
+    });
 
   addElement<Btn>(163, 119, 157, 42, "Program")
-    ->onRelease(std::bind(&MenuUI::selected, this, Button::LOCO_PROGRAM));
+    ->onRelease([this](void*) {
+      selected(Button::LOCO_PROGRAM);
+    });
 
   addElement<Header>(0, 173, 320, 18, "Accessories");
 
   addElement<Btn>(0, 203, 157, 42, "On")
-    ->onRelease(std::bind(&MenuUI::selected, this, Button::ACCESSORY_ON));
+    ->onRelease([this](void*) {
+      selected(Button::ACCESSORY_ON);
+    });
 
   addElement<Btn>(163, 203, 157, 42, "Off")
-    ->onRelease(std::bind(&MenuUI::selected, this, Button::ACCESSORY_OFF));
+    ->onRelease([this](void*) {
+      selected(Button::ACCESSORY_OFF);
+    });
 
   addElement<Header>(0, 257, 320, 18, "Power");
 
@@ -62,15 +76,21 @@ MenuUI::MenuUI(DCCExCS& dccExCS, DCCExCS::Power& power) : _dccExCS(dccExCS), _po
   });
 
   _powerJoin = addElement<Btn>(0, 336, 320, 42, "Join Tracks", true, power.join ? Btn::State::PRESSED : Btn::State::IDLE);
-  _powerJoin->onRelease(std::bind(&MenuUI::selected, this, Button::POWER_JOIN));
+  _powerJoin->onRelease([this](void*) {
+      selected(Button::POWER_JOIN);
+    });
 
   addElement<Header>(0, 390, 320, 18, "Settings");
 
   addElement<Btn>(0, 420, 157, 42, "T3 WiFi")
-    ->onRelease(std::bind(&MenuUI::selected, this, Button::WIFI));
+    ->onRelease([this](void*) {
+      selected(Button::WIFI);
+    });
 
   addElement<Btn>(163, 420, 157, 42, "Settings")
-    ->onRelease(std::bind(&MenuUI::selected, this, Button::SETTINGS));
+    ->onRelease([this](void*) {
+      selected(Button::SETTINGS);
+    });
 }
 
 MenuUI::~MenuUI() {

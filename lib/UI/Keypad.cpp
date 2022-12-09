@@ -78,7 +78,9 @@ Keypad::Keypad(const String& label, uint16_t max, uint16_t min, uint16_t* value)
       TFT_WHITE,
       TFT_WHITE
     })
-    ->onTouch(std::bind(&Input::backspace, _number));
+    ->onTouch([this](void*) {
+      _number->backspace();
+    });
 
   addElement<Button>(218, 342, 102, 40, "Clr",
     Button::Appearance {
@@ -91,7 +93,9 @@ Keypad::Keypad(const String& label, uint16_t max, uint16_t min, uint16_t* value)
       TFT_WHITE,
       TFT_WHITE
     })
-    ->onTouch(std::bind(&Input::clear, _number));
+    ->onTouch([this](void*) {
+      _number->clear();
+    });
 }
 
 Keypad::Keypad(const String& label, uint16_t max, uint16_t min) : Keypad(label, max, min, nullptr) { }

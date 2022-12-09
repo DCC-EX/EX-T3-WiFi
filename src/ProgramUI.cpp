@@ -33,28 +33,44 @@ ProgramUI::ProgramUI(DCCExCS& dccExCS) : _dccExCS(dccExCS) {
       });
     });
   addElement<Button>(163, 70, 157, 40, "Write Address")
-    ->onRelease(std::bind(&ProgramUI::newStep, this, Step::WRITE_ADDRESS_GET_ADDRESS, "Enter Address", 10293, 1));
+    ->onRelease([this](void*) {
+      newStep(Step::WRITE_ADDRESS_GET_ADDRESS, "Enter Address", 10293, 1);
+    });
 
   addElement<Button>(0, 117, 157, 40, "Read Byte")
-    ->onRelease(std::bind(&ProgramUI::newStep, this, Step::READ_CV_BYTE_GET_CV, "Enter CV Address", 1024, 1));
+    ->onRelease([this](void*) {
+      newStep(Step::READ_CV_BYTE_GET_CV, "Enter CV Address", 1024, 1);
+    });
   addElement<Button>(163, 117, 157, 40, "Write Byte")
-    ->onRelease(std::bind(&ProgramUI::newStep, this, Step::WRITE_CV_BYTE_GET_CV, "Enter CV Address", 1024, 1));
+    ->onRelease([this](void*) {
+      newStep(Step::WRITE_CV_BYTE_GET_CV, "Enter CV Address", 1024, 1);
+    });
 
   addElement<Button>(0, 164, 157, 40, "Read Bit")
-    ->onRelease(std::bind(&ProgramUI::newStep, this, Step::READ_CV_BIT_GET_CV, "Enter CV Address", 1024, 1));
+    ->onRelease([this](void*) {
+      newStep(Step::READ_CV_BIT_GET_CV, "Enter CV Address", 1024, 1);
+    });
   addElement<Button>(163, 164, 157, 40, "Write Bit")
-    ->onRelease(std::bind(&ProgramUI::newStep, this, Step::WRITE_CV_BIT_GET_CV, "Enter CV Address", 1024, 1));
+    ->onRelease([this](void*) {
+      newStep(Step::WRITE_CV_BIT_GET_CV, "Enter CV Address", 1024, 1);
+    });
 
   addElement<Header>(0, 218, 320, 18, "ACK settings");
   
   addElement<Button>(0, 248, 102, 40, "ACK Limit")
-    ->onRelease(std::bind(&ProgramUI::newStep, this, Step::ACK_LIMIT, "Enter ACK Limit", 100, 30));
+    ->onRelease([this](void*) {
+      newStep(Step::ACK_LIMIT, "Enter ACK Limit", 100, 30);
+    });
 
   addElement<Button>(109, 248, 102, 40, "ACK Min")
-    ->onRelease(std::bind(&ProgramUI::newStep, this, Step::ACK_MIN, "Enter ACK Min", 10000, 3000));
+    ->onRelease([this](void*) {
+      newStep(Step::ACK_MIN, "Enter ACK Min", 10000, 3000);
+    });
 
   addElement<Button>(218, 248, 102, 40, "ACK Max")
-    ->onRelease(std::bind(&ProgramUI::newStep, this, Step::ACK_MAX, "Enter ACK Max", 10000, 3000));
+    ->onRelease([this](void*) {
+      newStep(Step::ACK_MAX, "Enter ACK Max", 10000, 3000);
+    });
 }
 
 ProgramUI::~ProgramUI() {
