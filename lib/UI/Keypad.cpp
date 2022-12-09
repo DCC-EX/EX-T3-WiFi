@@ -24,7 +24,9 @@ Keypad::Keypad(const String& label, uint16_t max, uint16_t min, uint16_t* value)
       TFT_WHITE,
       TFT_WHITE
     })
-    ->onRelease(std::bind(&Keypad::dispatchEvent, this, Event::CANCEL, nullptr));
+    ->onRelease([this](void*) {
+      dispatchEvent(Event::CANCEL);
+    });
 
   addElement<Button>(163, 150, 157, 42, "Enter",
     Button::Appearance {
@@ -49,7 +51,9 @@ Keypad::Keypad(const String& label, uint16_t max, uint16_t min, uint16_t* value)
   uint16_t y = 198;
   for (uint8_t i = 1; i < 10; i++) {
     addElement<Button>(x, y, 102, 42, _numberLabels[i])
-      ->onTouch(std::bind(&Keypad::keyPress, this, i));
+      ->onTouch([this, i](void*) {
+        keyPress(i);
+      });
     if (i % 3 == 0) { // New row
       x = 0;
       y += 48;
@@ -59,7 +63,9 @@ Keypad::Keypad(const String& label, uint16_t max, uint16_t min, uint16_t* value)
   }
 
   addElement<Button>(109, 342, 102, 40, _numberLabels[0])
-    ->onTouch(std::bind(&Keypad::keyPress, this, 0));
+    ->onTouch([this](void*) {
+      keyPress(0);
+    });
 
   addElement<Button>(0, 342, 102, 40, "Del",
     Button::Appearance {

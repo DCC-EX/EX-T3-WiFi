@@ -1,7 +1,7 @@
 #include <DCCExCS.h>
 
 DCCExCS::DCCExCS(AsyncClient& csClient) : _csClient(csClient) {
-  addEventListener(Event::TIMEOUT, [this](void* parameter) {
+  addEventListener(Event::TIMEOUT, [this](void*) {
     _response.matched = NULL;
   });
 }

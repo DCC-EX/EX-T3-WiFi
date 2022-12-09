@@ -60,14 +60,14 @@ void setLocoUI();
 template <typename T>
 void setUI(T&& ui) {
   UI::tft->fillRect(0, 30, 320, 450, TFT_BLACK);
-  UI::tasks.push_back([ui]() {
+  UI::tasks.push_back([ui] {
     activeUI.reset();
     activeUI = ui();
   });
 }
 
 void setLocoKeypadUI(const Events::EventCallback &&onCancel) {
-  setUI([onCancel]() {
+  setUI([onCancel] {
     auto ui = std::make_unique<Keypad>("Loco Address", 10293, 0);
     ui->addEventListener(Keypad::Event::ENTER, [](void* parameter) {
       locos.add(*static_cast<uint16_t*>(parameter));
@@ -79,7 +79,7 @@ void setLocoKeypadUI(const Events::EventCallback &&onCancel) {
 }
 
 void setLocoByNameUI(bool group) {
-  setUI([group]() {
+  setUI([group] {
     auto ui = std::make_unique<LocoByNameUI>(group);
     ui->addEventListener(LocoByNameUI::Event::SELECTED, [](void* parameter) {
       locos.add(*static_cast<uint16_t*>(parameter));
@@ -90,12 +90,13 @@ void setLocoByNameUI(bool group) {
 }
 
 void setLocoUI() {
-  setUI([]() {
+  setUI([] {
     auto ui = std::make_unique<LocoUI>(dccExCS, locos);
     ui->addEventListener(LocoUI::Event::SWIPE_ACTION, [](void* parameter) {
+      using Action = SettingsClass::LocoUI::Swipe::Action;
       switch (const auto action = *static_cast<uint8_t*>(parameter)) {
-        case SettingsClass::LocoUI::Swipe::Action::KEYPAD: {
-          setLocoKeypadUI([](void* parameter) {
+        case Action::KEYPAD: {
+          setLocoKeypadUI([](void*) {
             if (locos == 0) {
               setMenuUI();
             } else {
@@ -103,27 +104,25 @@ void setLocoUI() {
             }
           });
         } break;
-        case SettingsClass::LocoUI::Swipe::Action::NAME:
-        case SettingsClass::LocoUI::Swipe::Action::GROUP: {
-          bool group = action == SettingsClass::LocoUI::Swipe::Action::GROUP;
+        case Action::NAME:
+        case Action::GROUP: {
+          bool group = action == Action::GROUP;
           setLocoByNameUI(group);
         } break;
-        case SettingsClass::LocoUI::Swipe::Action::RELEASE: {
+        case Action::RELEASE: {
           dccExCS.releaseLoco(locos.remove());
           // if the action after swipe release is prev/next and there's no active locos then go back to menu
-          if ((Settings.LocoUI.Swipe.release == SettingsClass::LocoUI::Swipe::Action::NEXT 
-                || Settings.LocoUI.Swipe.release == SettingsClass::LocoUI::Swipe::Action::PREV
-              ) && locos == 0) {
+          if ((Settings.LocoUI.Swipe.release == Action::NEXT || Settings.LocoUI.Swipe.release == Action::PREV) && locos == 0) {
             setMenuUI();
           } else {
             (static_cast<LocoUI*>(activeUI.get()))->dispatchEvent(LocoUI::Event::SWIPE_ACTION, &Settings.LocoUI.Swipe.release);
           }
         } break;
-        case SettingsClass::LocoUI::Swipe::Action::NEXT: {
+        case Action::NEXT: {
           locos.next();
           setLocoUI();
         } break;
-        case SettingsClass::LocoUI::Swipe::Action::PREV: {
+        case Action::PREV: {
           locos.prev();
           setLocoUI();
         } break;
@@ -135,13 +134,13 @@ void setLocoUI() {
 }
 
 void setAccessoryKeypadUI(bool state) {
-  setUI([state]() {
+  setUI([state] {
     auto ui = std::make_unique<Keypad>("Accessory Address", 2044, 1);
     ui->addEventListener(Keypad::Event::ENTER, [state](void* parameter) {
       dccExCS.accessory(*static_cast<uint16_t*>(parameter), state);
       setMenuUI();
     });
-    ui->addEventListener(Keypad::Event::CANCEL, [](void* parameter) {
+    ui->addEventListener(Keypad::Event::CANCEL, [](void*) {
       setMenuUI();
     });
     return ui;
@@ -149,12 +148,12 @@ void setAccessoryKeypadUI(bool state) {
 }
 
 void setMenuUI() {
-  setUI([]() {
+  setUI([] {
     auto ui = std::make_unique<MenuUI>(dccExCS, power);
     ui->addEventListener(MenuUI::Event::SELECTED, [](void* parameter) {
       switch (const auto button = *static_cast<MenuUI::Button*>(parameter)) {
         case MenuUI::Button::LOCO_LOAD_BY_ADDRESS: {
-          setLocoKeypadUI([](void* parameter) {
+          setLocoKeypadUI([](void*) {
             setMenuUI();
           });
         } break;
@@ -167,7 +166,7 @@ void setMenuUI() {
           dccExCS.releaseLoco(locos.remove());
         } break;
         case MenuUI::Button::LOCO_PROGRAM: {
-          setUI([]() {
+          setUI([] {
             return std::make_unique<ProgramUI>(dccExCS);
           });
         } break;
@@ -195,12 +194,12 @@ void setMenuUI() {
           dccExCS.setCSPower(DCCExCS::Power::JOIN, true);
         } break;
         case MenuUI::Button::WIFI: {
-          setUI([]() {
+          setUI([] {
             return std::make_unique<WiFiUI>();
           });
         } break;
         case MenuUI::Button::SETTINGS: {
-          setUI([]() {
+          setUI([] {
             return std::make_unique<SettingsUI>();
           });
         } break;
@@ -231,7 +230,7 @@ void keepConnectionsAlive(void* parameter) {
   }
 }
 
-void powerCheck(void* parameter) {
+void powerCheck(void*) {
   for (;;) {
     uint32_t total = 0;
     for (uint8_t i = 0; i < 10; i++) {
@@ -243,7 +242,7 @@ void powerCheck(void* parameter) {
     voltage *= 2;
     voltage /= 1000;
 
-    UI::tasks.push_back([voltage]() {
+    UI::tasks.push_back([voltage] {
       uiHeader->setPowerStatus(voltage);
     });
     vTaskDelay(POWER_CHECK / portTICK_PERIOD_MS);
@@ -262,7 +261,7 @@ void setRotation() {
   ts.setRotation(standard ? GT911::Rotate::_180 : GT911::Rotate::_0);
 
   if (activeUI != nullptr) {
-    UI::tasks.push_back([]() {
+    UI::tasks.push_back([] {
       UI::tft->fillScreen(TFT_BLACK);
       uiHeader->redraw();
       activeUI->redraw();
@@ -283,7 +282,7 @@ void setup() {
 
   // Load the settings
   Settings.load();
-  Settings.addEventListener(SettingsClass::Event::ROTATION_CHANGE, [](void* parameter) {
+  Settings.addEventListener(SettingsClass::Event::ROTATION_CHANGE, [](void*) {
     #if defined(USE_ACCELEROMETER)
     lastOrientation = acce.getOrientation();
     #endif
@@ -336,32 +335,32 @@ void setup() {
   
   // WiFi connected
   WiFi.onEvent([](WiFiEvent_t event, WiFiEventInfo_t info) {
-    UI::tasks.push_back([]() {
+    UI::tasks.push_back([] {
       uiHeader->setWiFiStatus(true);
     });
   }, ARDUINO_EVENT_WIFI_STA_CONNECTED);
   // WiFi disconnected
   WiFi.onEvent([](WiFiEvent_t event, WiFiEventInfo_t info) {
-    UI::tasks.push_back([]() {
+    UI::tasks.push_back([] {
       uiHeader->setWiFiStatus(false);
     });
   }, ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
   // CS connected
   csClient.onConnect([](void* arg, AsyncClient* client) {
-    UI::tasks.push_back([]() {
+    UI::tasks.push_back([] {
       dccExCS.getCSPower(); // Get current power status
       uiHeader->setCSStatus(true);
     });
   });
   // CS disconnected
   csClient.onDisconnect([](void* arg, AsyncClient* client) {
-    UI::tasks.push_back([]() {
+    UI::tasks.push_back([] {
       uiHeader->setCSStatus(false);
     });
   });
   // If the connection to the CS times out then close it so it'll attempt a reconnect
   csClient.onTimeout([](void* arg, AsyncClient* client, uint32_t time) {
-    UI::tasks.push_back([]() {
+    UI::tasks.push_back([] {
       csClient.close(true);
     });
   });
@@ -383,7 +382,7 @@ void setup() {
 
   // Aquired loco count change
   locos.addEventListener(Locos::Event::COUNT_CHANGE, [](void* parameter) {
-    UI::tasks.push_back([count = *static_cast<uint8_t*>(parameter)]() {
+    UI::tasks.push_back([count = *static_cast<uint8_t*>(parameter)] {
       uiHeader->setLocoCount(count);
     });
   });
@@ -394,9 +393,9 @@ void setup() {
   });
 
   // If the CS settings change we disconnect so the keep alive task will reconnect using new values
-  Settings.addEventListener(SettingsClass::Event::CS_CHANGE, [](void* parameter) {
+  Settings.addEventListener(SettingsClass::Event::CS_CHANGE, [](void*) {
     // Done in task queue otherwise we crash out with watchdog timer
-    UI::tasks.push_back([]() {
+    UI::tasks.push_back([] {
       csClient.close();
       WiFi.disconnect();
     });
@@ -409,7 +408,7 @@ void setup() {
   setRotation();
   // Create UI Header
   uiHeader = std::make_unique<UIHeader>();
-  uiHeader->addEventListener(UIHeader::Event::MENU, [](void* parameter) {
+  uiHeader->addEventListener(UIHeader::Event::MENU, [](void*) {
     if (dynamic_cast<MenuUI*>(activeUI.get()) != nullptr) { // Is current UI the menu?
       if (locos != 0) { // If we're already on the menu and there's an active loco switch to the loco UI
         setLocoUI();
@@ -443,7 +442,7 @@ void loop() {
     GTPoint points[touches];
     memcpy(points, ts.getPoints(), touches * sizeof(GTPoint));
     // If menu press
-    if (!uiHeader->handleTouch(touches, points, []() -> bool {
+    if (!uiHeader->handleTouch(touches, points, [] {
       return ts.touched(GT911_MODE_POLLING);
     })) {
       // Attempt to detect swipe
@@ -470,7 +469,7 @@ void loop() {
       }
 
       if (swipe == UI::Swipe::NONE) {
-        activeUI->handleTouch(touches, points, []() -> bool {
+        activeUI->handleTouch(touches, points, [] {
           return ts.touched(GT911_MODE_POLLING);
         });
         Serial.println(ESP.getFreeHeap());

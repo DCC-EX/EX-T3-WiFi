@@ -4,8 +4,8 @@
 
 MenuUI::MenuUI(DCCExCS& dccExCS, DCCExCS::Power& power) : _dccExCS(dccExCS), _power(power) {
   _elements.reserve(17);
-  _broadcastPowerHandler = dccExCS.addEventListener(DCCExCS::Event::BROADCAST_POWER, [this](void* parameter) {
-    UI::tasks.push_back([this]() {
+  _broadcastPowerHandler = dccExCS.addEventListener(DCCExCS::Event::BROADCAST_POWER, [this](void*) {
+    UI::tasks.push_back([this] {
       _powerAll->setState(_power.main && _power.prog ? Btn::State::PRESSED : Btn::State::IDLE);
       _powerMain->setState(_power.main ? Btn::State::PRESSED : Btn::State::IDLE);
       _powerProg->setState(_power.prog ? Btn::State::PRESSED : Btn::State::IDLE);
@@ -41,22 +41,22 @@ MenuUI::MenuUI(DCCExCS& dccExCS, DCCExCS::Power& power) : _dccExCS(dccExCS), _po
   addElement<Header>(0, 257, 320, 18, "Power");
 
   _powerAll = addElement<Btn>(0, 287, 102, 42, "On All", "Off All", true, power.main && power.prog ? Btn::State::PRESSED : Btn::State::IDLE);
-  _powerAll->onRelease([this](void* parameter) {
-    selected(static_cast<Btn*>(parameter)->getState() == Btn::State::IDLE
+  _powerAll->onRelease([this](void*) {
+    selected(_powerAll->getState() == Btn::State::IDLE
       ? Button::POWER_OFF_ALL
       : Button::POWER_ON_ALL);
   });
 
   _powerMain = addElement<Btn>(109, 287, 102, 42, "On Main", "Off Main", true, power.main ? Btn::State::PRESSED : Btn::State::IDLE);
-  _powerMain->onRelease([this](void* parameter) {
-    selected(static_cast<Btn*>(parameter)->getState() == Btn::State::IDLE
+  _powerMain->onRelease([this](void*) {
+    selected(_powerMain->getState() == Btn::State::IDLE
       ? Button::POWER_OFF_MAIN
       : Button::POWER_ON_MAIN);
   });
 
   _powerProg = addElement<Btn>(218, 287, 102, 42, "On Prog", "Off Prog", true, power.prog ? Btn::State::PRESSED : Btn::State::IDLE);
-  _powerProg->onRelease([this](void* parameter) {
-    selected(static_cast<Btn*>(parameter)->getState() == Btn::State::IDLE
+  _powerProg->onRelease([this](void*) {
+    selected(_powerProg->getState() == Btn::State::IDLE
       ? Button::POWER_OFF_PROG
       : Button::POWER_ON_PROG);
   });

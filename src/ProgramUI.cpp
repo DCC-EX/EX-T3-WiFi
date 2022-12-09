@@ -5,7 +5,7 @@
 ProgramUI::ProgramUI(DCCExCS& dccExCS) : _dccExCS(dccExCS) {
   _elements.reserve(11);
 
-  _timeoutHandler = _dccExCS.addEventListener(DCCExCS::Event::TIMEOUT, [this](void* parameter) {
+  _timeoutHandler = _dccExCS.addEventListener(DCCExCS::Event::TIMEOUT, [this](void*) {
     result("Timeout", TFT_RED);
   });
   _writeHandler = _dccExCS.addEventListener(DCCExCS::Event::PROGRAM_WRITE, [this](void* parameter) {
@@ -26,8 +26,8 @@ ProgramUI::ProgramUI(DCCExCS& dccExCS) : _dccExCS(dccExCS) {
   addElement<Header>(0, 40, 320, 18, "Program CV's");
 
   addElement<Button>(0, 70, 157, 40, "Read Address")
-    ->onRelease([this](void* parameter) {
-      UI::tasks.push_back([this]() {
+    ->onRelease([this](void*) {
+      UI::tasks.push_back([this] {
         working();
         _dccExCS.getLocoAddress();
       });
@@ -65,14 +65,16 @@ ProgramUI::~ProgramUI() {
 
 void ProgramUI::newStep(Step step, const String& title, uint16_t max, uint16_t min) {
   _step = step;
-  UI::tasks.push_back([this, title, max, min]() {
+  UI::tasks.push_back([this, title, max, min] {
     reset();
     auto keypad = std::make_unique<Keypad>(title, max, min);
     keypad->addEventListener(Keypad::Event::ENTER, [this](void* parameter) {
-      UI::tasks.push_back(std::bind(&ProgramUI::keypadEnter, this, *static_cast<uint32_t*>(parameter)));
+      UI::tasks.push_back([this, value = *static_cast<uint32_t*>(parameter)] {
+        keypadEnter(value); 
+      });
     });
-    keypad->addEventListener(Keypad::Event::CANCEL, [this](void* parameter) {
-      UI::tasks.push_back([this]() {
+    keypad->addEventListener(Keypad::Event::CANCEL, [this](void*) {
+      UI::tasks.push_back([this] {
         reset(true);
       });
     });
@@ -85,7 +87,7 @@ void ProgramUI::keypadEnter(uint32_t number) {
     case Step::WRITE_ADDRESS_GET_ADDRESS: {
       String message = "Write Address?\nAddress: ";
       message += number;
-      confirm(message, [this, number](void* parameter) {
+      confirm(message, [this, number](void*) {
         working();
         _dccExCS.setLocoAddress(number);
       });
@@ -103,7 +105,7 @@ void ProgramUI::keypadEnter(uint32_t number) {
       message += _stepData[0];
       message += "\nValue: ";
       message += number;
-      confirm(message, [this, number](void* parameter) {
+      confirm(message, [this, number](void*) {
         working();
         _dccExCS.setLocoCVByte(_stepData[0], number);
       });
@@ -131,7 +133,7 @@ void ProgramUI::keypadEnter(uint32_t number) {
       message += _stepData[1];
       message += "\nValue: ";
       message += number;
-      confirm(message, [this, number](void* parameter) {
+      confirm(message, [this, number](void*) {
         working();
         _dccExCS.setLocoCVBit(_stepData[0], _stepData[1], number);
       });
@@ -160,8 +162,8 @@ void ProgramUI::confirm(const String& message, Events::EventCallback&& callback)
     },
     {
       "No",
-      [this](void* parameter) {
-        UI::tasks.push_back([this]() {
+      [this](void*) {
+        UI::tasks.push_back([this] {
           reset(true);
         });
       }
@@ -179,8 +181,8 @@ void ProgramUI::result(const String& message, uint16_t color) {
   _child = std::make_unique<MessageBox>(message, color, std::vector<MessageBox::Button> {
     {
       "Ok",
-      [this](void* parameter) {
-        UI::tasks.push_back([this]() {
+      [this](void*) {
+        UI::tasks.push_back([this] {
           reset(true);
         });
       }

@@ -7,7 +7,7 @@
 
 class Events {
   public:
-    using EventCallback = std::function<void(void* parameter)>;
+    using EventCallback = std::function<void(void*)>;
   private:
     struct EventHandler {
       EventCallback cb;

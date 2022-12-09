@@ -3,44 +3,31 @@
 Paging::Paging(uint8_t pages) : _pages(pages) {
   _elements.reserve(3);
 
-  addElement<Button>(0, 435, 102, 42, "<",
-    Button::Appearance {
-      TFT_WHITE,
-      TFT_DARKGREY,
-      TFT_WHITE
-    },
-    Button::Appearance {
-      TFT_DARKGREY,
-      TFT_WHITE,
-      TFT_WHITE
-    })
-    ->onRelease(std::bind(&Paging::prev, this));
+  auto idle = Button::Appearance {
+    TFT_WHITE,
+    TFT_DARKGREY,
+    TFT_WHITE
+  };
+  auto pressed = Button::Appearance {
+    TFT_DARKGREY,
+    TFT_WHITE,
+    TFT_WHITE
+  };
 
-  addElement<Button>(109, 435, 102, 42,
-    Button::Appearance {
-      TFT_WHITE,
-      TFT_DARKGREY,
-      TFT_WHITE
-    },
-    Button::Appearance {
-      TFT_DARKGREY,
-      TFT_WHITE,
-      TFT_WHITE
-    })
-    ->onRelease(std::bind(&Paging::reset, this));
+  addElement<Button>(0, 435, 102, 42, "<", idle, pressed)
+    ->onRelease([this](void*) {
+      prev();
+    });
 
-  addElement<Button>(218, 435, 102, 42, ">",
-    Button::Appearance {
-      TFT_WHITE,
-      TFT_DARKGREY,
-      TFT_WHITE
-    },
-    Button::Appearance {
-      TFT_DARKGREY,
-      TFT_WHITE,
-      TFT_WHITE
-    })
-    ->onRelease(std::bind(&Paging::next, this));
+  addElement<Button>(109, 435, 102, 42, idle, pressed)
+    ->onRelease([this](void*) {
+      reset();
+    });
+
+  addElement<Button>(218, 435, 102, 42, ">", idle, pressed)
+    ->onRelease([this](void*) {
+      next();
+    });
 
   update();
 }

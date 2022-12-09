@@ -8,7 +8,9 @@
 
 LocoUI::LocoUI(DCCExCS& dccExCS, uint16_t address) : _dccExCS(dccExCS), _loco(address) {
   _elements.reserve(37);
-  _broadcastLocoHandler = _dccExCS.addEventListener(DCCExCS::Event::BROADCAST_LOCO, std::bind(&LocoUI::broadcast, this, std::placeholders::_1));
+  _broadcastLocoHandler = _dccExCS.addEventListener(DCCExCS::Event::BROADCAST_LOCO, [this](void* parameter) {
+    broadcast(parameter);
+  });
 
   char path[32];
   sprintf(path, "/locos/%d.json", _loco.address);
@@ -72,7 +74,7 @@ LocoUI::~LocoUI() {
 }
 
 void LocoUI::broadcast(void* parameter) {
-  UI::tasks.push_back([this, broadcast = *static_cast<DCCExCS::Loco*>(parameter)]() {
+  UI::tasks.push_back([this, broadcast = *static_cast<DCCExCS::Loco*>(parameter)] {
     if (broadcast.address == _loco.address) { // Broadcast for loco we're currently controlling
       if (broadcast.speed != _loco.speed) {
         _labelSpeed->setLabel(String(broadcast.speed));
@@ -106,39 +108,35 @@ void LocoUI::createFunctionButtons() {
       uint16_t x = 0;
       uint8_t col = 0;
       for (JsonObjectConst const& fn : row) {
-        JsonObjectConst idle = fn["btn"]["idle"];
-        JsonObjectConst pressed = fn["btn"]["pressed"];
         // Needed for 4 button rows as it divides to a half pixel so the two inner buttons are 1 pixel wider
         uint8_t extra = cols == 4 && (col == 1 || col == 2) ? 1 : 0;
         bool latching = fn["latching"] | true;
         uint8_t func = fn["fn"];
 
+        auto appearance = [](JsonObjectConst obj) -> Button::Appearance {
+          return {
+            obj["label"].as<const char*>(),
+            obj["color"].as<uint16_t>(),
+            obj["fill"].as<uint16_t>(),
+            obj["border"].as<uint16_t>(),
+            obj["icon"].as<const char*>()
+          };
+        };
+
         auto btn = addElement<Button>(x, y, width + extra, 42,
-          Button::Appearance {
-            idle["label"].as<const char*>(),
-            idle["color"].as<uint16_t>(),
-            idle["fill"].as<uint16_t>(),
-            idle["border"].as<uint16_t>(),
-            idle["icon"].as<const char*>()
-          },
-          Button::Appearance {
-            pressed["label"].as<const char*>(), 
-            pressed["color"].as<uint16_t>(),
-            pressed["fill"].as<uint16_t>(),
-            pressed["border"].as<uint16_t>(),
-            pressed["icon"].as<const char*>()
-          }, 
+          appearance(fn["btn"]["idle"]),
+          appearance(fn["btn"]["pressed"]),
           latching,
           _loco.functions.test(func) ? Button::State::PRESSED : Button::State::IDLE
         );
-        btn->onTouch([this, latching, func](void* parameter) {
+        btn->onTouch([this, latching, func](void*) {
           if (latching) {
             _dccExCS.setLocoFn(_loco.address, func, _loco.functions.flip(func).test(func));
           } else {
             _dccExCS.setLocoFn(_loco.address, func, true);
           }
         });
-        btn->onRelease([this, latching, func](void* parameter) {
+        btn->onRelease([this, latching, func](void*) {
           if (!latching) {
             _dccExCS.setLocoFn(_loco.address, func, false);
           }
