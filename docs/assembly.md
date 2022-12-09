@@ -28,8 +28,15 @@ Solder a female header to the accelerometer.
   <img src="imgs/accelerometer-close.jpg">
 </p>
 
-Start by copying the contents of the `sd` folder to the SD card and insert into the display. This is easier to do now while access is still easy.
-> This needs to be the contents of the `sd` folder and not the folder itself, the files need to be copied to the root of the SD card.
+Start by copying the contents of the `sd` folder to the MicroSD card and insert into the display. This is easier to do now while access is still easy.
+> * The files in the `/sd` directory should not exceed 4GB or 8GB in size; however a 16GB MicroSD card should work well.
+> * The MicroSD card needs to be FAT32 formatted before the files contained in the `/sd` directory are copied to it.
+> * After copying the `/sd` directory contents to the MicroSD card it should contain the file `default.json` and a directory named `icons` (which contains the icons for the Touchscreen use). e.g\
+`D:\default.json`\
+`D:\icons\bulb-off.bmp`\
+`D:\icons\bulb-on.bmp`\
+etc.\
+Where `D:\` is the MicroSD card.
 
 Attach the ribbon cable to the display and insert the display in to the top part of the case.
 <p align="center">
