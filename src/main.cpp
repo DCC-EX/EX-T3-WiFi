@@ -66,7 +66,7 @@ void setUI(T&& ui) {
   });
 }
 
-void setLocoKeypadUI(const Events::EventCallback &&onCancel) {
+void setLocoKeypadUI(const Events::EventCallback&& onCancel) {
   setUI([onCancel] {
     auto ui = std::make_unique<Keypad>("Loco Address", 10293, 0);
     ui->addEventListener(Keypad::Event::ENTER, [](void* parameter) {
@@ -210,7 +210,7 @@ void setMenuUI() {
 }
 
 // Based off the helpful blog post here, https://savjee.be/2020/02/esp32-keep-wifi-alive-with-freertos-task/
-void keepConnectionsAlive(void* parameter) {
+void keepConnectionsAlive(void*) {
   for (;;) {
     if (Settings.CS.valid()) { // Valid if we have SSID, Server & Port
       if (WiFi.status() != WL_CONNECTED) {
