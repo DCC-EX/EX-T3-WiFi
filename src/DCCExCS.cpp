@@ -22,7 +22,7 @@ void DCCExCS::handleCS(uint8_t* data, uint16_t size) {
   std::string str(reinterpret_cast<char*>(data), size);
   std::smatch matches;
 
-  if (std::regex_search(str, matches, std::regex("l (\\d+) -?\\d (\\d+) (\\d+)"))) { // Loco broadcast
+  if (std::regex_search(str, matches, std::regex("l (\\d+) -?\\d+ (\\d+) (\\d+)"))) { // Loco broadcast
     Loco loco(
       strtoul(matches[1].str().c_str(), (char**)NULL, 10),
       strtol(matches[2].str().c_str(), (char**)NULL, 10),
