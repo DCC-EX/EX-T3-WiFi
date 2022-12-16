@@ -14,8 +14,13 @@ build_flags =
 ```
 
 Now the throttle code can be uploaded.\
-On first compile a random access point name and password will be generated _(This can be changed if you want to set your own later on `include\ThrottleWiFiSettings.h`)_.
-_These can be viewed on the throttle so there's no need to remember them._
+Either of the options below will upload the code to the FireBeetle but **Upload and Monitor** can help with debugging any issues.
+<p align="center">
+  <img src="./imgs/code-upload.png" width="250" />
+</p>
+
+On first compile a random access point name and password will be generated *(This can be changed if you want to set your own later on `include\ThrottleWiFiSettings.h`)*.\
+*These can be viewed on the throttle so there's no need to remember them.*
 
 # Command Station
 
