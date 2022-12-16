@@ -17,13 +17,14 @@
  - DFRobot Fermion: EC11 Rotary Encoder - SEN0235 - https://www.dfrobot.com/product-1611.html
  - DFRobot Fermion: LIS2DW12 Triple Axis Accelerometer - SEN0405 - https://www.dfrobot.com/product-2337.html **(Optional)**
  - Miniature Slide Switch SPDT - I used one from here https://www.hobbytronics.co.uk/slide-switch?search=switch
- to fit the case it'll need to be the same dimensions
+ to fit the case it'll need to be the same dimensions *(19mm long, 5.6mm wide, 5mm high and mounting holes 15mm apart)*
  - 3000mah\2000mah LiPo battery - https://shop.pimoroni.com/products/lipo-battery-pack?variant=20429082247 **⚠ This battery has the terminals the correct way but before connecting any battery check the wires are the right way round on the plug ⚠**
- - All screws are cap heads;
+ - All screws are self tapping cap heads;
 	- M2x5mm - x6 (+2 if using accelerometer) (+2 if using 3000mah battery)
 	- M2x8mm - x6 (+2 if using 2000mah battery)
 	- M3x6mm - x2
 	- M3x20mm - x4
+	<p align="center"><img src="docs/imgs/screws.jpg" width="256"></p>
  - Stranded and solid core wire depending on preference
  - If using headers then you'll need some right angle male, right angle female and standard female
  - Heatshrink for wires
