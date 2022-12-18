@@ -48,8 +48,9 @@ while True:
       c.send(b"<w 4321>\n")
     case "R":
       c.send(b"<r 1423>\n")
+    case "B":
+      c.send(b"<r12345|32767|3 2 1 >\n")
     case "F":
-      print(">> <l 1 1 146 7>")
       c.send(b"<l 1 1 146 7>\n")
     case "l":
       c.send(b"<l 1 1 0 0>\n")
@@ -63,6 +64,8 @@ while True:
         # c.send(bytes("<T " + r.group("l") + " " + r.group("s") + " " + r.group("d") + ">\n", "raw_unicode_escape"))
       else:
         c.send(b"<l 1 1 0 0>\n")
+    case "U":
+      c.send(b"<p1 MAIN>")
     case "D":
       r = random.randint(0, 50)
       r = 50
@@ -75,3 +78,5 @@ while True:
       c.send(b">\n")
         # c.send(bytes("cab={cab}, speed={speed}, dir={dir}\n".format(cab=random.randint(0, 1024), speed=random.randint(0, 128), dir=random.choice(["F", "R"])), "raw_unicode_escape"))
       # c.send(bytes("Used={used}, max=50\n".format(used = r), "raw_unicode_escape"))
+
+  c.send(b"<X>")

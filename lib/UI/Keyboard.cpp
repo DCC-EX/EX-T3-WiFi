@@ -38,11 +38,17 @@ Keyboard::Keyboard(const String& label, const String& value) {
     });
 
   addElement<Button>(63, 248, 192, 30, " ")
-    ->onRelease(std::bind(&Keyboard::addKeyToInput, this, std::placeholders::_1));
+    ->onRelease([this](void* parameter) {
+      addKeyToInput(parameter);
+    });
   addElement<Button>(257, 248, 30, 30, ",")
-    ->onRelease(std::bind(&Keyboard::addKeyToInput, this, std::placeholders::_1));
+    ->onRelease([this](void* parameter) {
+      addKeyToInput(parameter);
+    });
   addElement<Button>(289, 248, 30, 30, ".")
-    ->onRelease(std::bind(&Keyboard::addKeyToInput, this, std::placeholders::_1));
+    ->onRelease([this](void* parameter) {
+      addKeyToInput(parameter);
+    });
 
   addElement<Button>(0, 288, 157, 42, "Cancel",
     Button::Appearance {
@@ -55,7 +61,9 @@ Keyboard::Keyboard(const String& label, const String& value) {
       TFT_WHITE,
       TFT_WHITE
     })
-    ->onRelease(std::bind(&Keyboard::dispatchEvent, this, Event::CANCEL, nullptr));
+    ->onRelease([this](void*) {
+      dispatchEvent(Event::CANCEL);
+    });
 
   addElement<Button>(163, 288, 157, 42, "Enter",
     Button::Appearance {
@@ -79,7 +87,9 @@ uint8_t Keyboard::addKeyRow(uint16_t x, uint16_t y, std::vector<char>& keys) {
 
   for (char key : keys) {
     addElement<Button>(x, y, 30, 30, String(key))
-      ->onRelease(std::bind(&Keyboard::addKeyToInput, this, std::placeholders::_1));
+      ->onRelease([this](void* parameter) {
+        addKeyToInput(parameter);
+      });
     x += 32;
   }
 

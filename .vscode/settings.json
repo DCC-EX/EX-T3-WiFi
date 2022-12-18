@@ -58,7 +58,8 @@
     "iostream": "cpp",
     "mutex": "cpp",
     "thread": "cpp",
-    "variant": "cpp"
+    "variant": "cpp",
+    "charconv": "cpp"
   },
   "cmake.configureOnOpen": false
 }

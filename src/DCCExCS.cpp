@@ -1,7 +1,8 @@
 #include <DCCExCS.h>
+#include <Functions.h>
 
 DCCExCS::DCCExCS(AsyncClient& csClient) : _csClient(csClient) {
-  addEventListener(Event::TIMEOUT, [this](void* parameter) {
+  addEventListener(Event::TIMEOUT, [this](void*) {
     _response.matched = NULL;
   });
 }
@@ -21,27 +22,27 @@ void DCCExCS::deleteTimeout() {
 void DCCExCS::handleCS(uint8_t* data, uint16_t size) {
   std::string str(reinterpret_cast<char*>(data), size);
   std::smatch matches;
-
+  
   if (std::regex_search(str, matches, std::regex("l (\\d+) -?\\d+ (\\d+) (\\d+)"))) { // Loco broadcast
-    Loco loco(
-      strtoul(matches[1].str().c_str(), (char**)NULL, 10),
-      strtol(matches[2].str().c_str(), (char**)NULL, 10),
-      strtoul(matches[3].str().c_str(), (char**)NULL, 10)
-    );
+    uint16_t address = from_chars<uint16_t>(matches.str(1));
+    uint8_t speedCode = from_chars<uint8_t>(matches.str(2));
+    uint32_t functions = from_chars<uint32_t>(matches.str(3));
+
+    Loco loco(address, speedCode, functions);
     dispatchEvent(Event::BROADCAST_LOCO, &loco);
   } else if (std::regex_search(str, matches, std::regex("p(\\d)\\s?(\\w+)?"))) { // Power broadcast
     Power power;
 
-    if (matches[1].str()[0] == '1') {
+    if (matches.str(1)[0] == '1') {
       if (!matches[2].matched) {
         power.main = true;
         power.prog = true;
       } else {
-        if (matches[2].str().compare("MAIN") == 0) {
+        if (matches.str(2).compare("MAIN") == 0) {
           power.main = true;
-        } else if (matches[2].str().compare("PROG") == 0) {
+        } else if (matches.str(2).compare("PROG") == 0) {
           power.prog = true;
-        } else if (matches[2].str().compare("JOIN") == 0) {
+        } else if (matches.str(2).compare("JOIN") == 0) {
           power.main = true;
           power.prog = true;
           power.join = true;
@@ -108,7 +109,7 @@ void DCCExCS::getLocoAddress() {
   _response = {
     "r (-?\\d+)",
     [this](std::smatch &matches) {
-      int16_t result = strtol(matches[1].str().c_str(), (char**)NULL, 10);
+      int16_t result = from_chars<int16_t>(matches.str(1));
       dispatchEvent(DCCExCS::Event::PROGRAM_READ, &result);
     }
   };
@@ -123,7 +124,7 @@ void DCCExCS::setLocoAddress(uint16_t address) {
     "w (-?\\d+)",
     [this, address](std::smatch &matches) {
       int16_t result = -1;
-      if (strtoul(matches[1].str().c_str(), (char**)NULL, 10) == address) {
+      if (from_chars<int16_t>(matches.str(1)) == address) {
         result = 1;
       }
 
@@ -143,8 +144,8 @@ void DCCExCS::getLocoCVByte(uint16_t cv) {
     "r12345\\|32767\\|(\\d+) (-?\\d+)",
     [this, cv](std::smatch &matches) {
       int16_t result = -1;
-      if (strtoul(matches[1].str().c_str(), (char**)NULL, 10) == cv) {
-        result = strtol(matches[2].str().c_str(), (char**)NULL, 10);
+      if (from_chars<uint16_t>(matches.str(1)) == cv) {
+        result = from_chars<int16_t>(matches.str(2));
       }
 
       dispatchEvent(DCCExCS::Event::PROGRAM_READ, &result);
@@ -163,8 +164,8 @@ void DCCExCS::setLocoCVByte(uint16_t cv, uint8_t value) {
     "r (\\d+) (-?\\d+)",
     [this, cv, value](std::smatch &matches) {
       int16_t result = -1;
-      if (strtoul(matches[1].str().c_str(), (char**)NULL, 10) == cv &&
-          strtoul(matches[2].str().c_str(), (char**)NULL, 10) == value) {
+      if (from_chars<uint16_t>(matches.str(1)) == cv &&
+          from_chars<uint8_t>(matches.str(2)) == value) {
         result = 1;
       }
 
@@ -184,8 +185,8 @@ void DCCExCS::getLocoCVBit(uint16_t cv, uint8_t bit) {
     "r12345\\|32767\\|(\\d+) (-?\\d+)",
     [this, cv, bit](std::smatch &matches) {
       int16_t result = -1;
-      if (strtoul(matches[1].str().c_str(), (char**)NULL, 10) == cv) {
-        uint8_t value = strtol(matches[2].str().c_str(), (char**)NULL, 10);
+      if (from_chars<uint16_t>(matches.str(1)) == cv) {
+        uint8_t value = from_chars<uint8_t>(matches.str(2));
         result = (value >> bit) & 1;
       }
 
@@ -205,9 +206,9 @@ void DCCExCS::setLocoCVBit(uint16_t cv, uint8_t bit, bool value) {
     "r12345\\|32767\\|(\\d+) (\\d+) (-?\\d+)",
     [this, cv, bit, value](std::smatch &matches) {
       int16_t result = -1;
-      if (strtoul(matches[1].str().c_str(), (char**)NULL, 10) == cv &&
-          strtoul(matches[2].str().c_str(), (char**)NULL, 10) == bit &&
-          strtoul(matches[3].str().c_str(), (char**)NULL, 10) == value) {
+      if (from_chars<uint16_t>(matches.str(1)) == cv &&
+          from_chars<uint8_t>(matches.str(2)) == bit &&
+          from_chars<uint8_t>(matches.str(3)) == value) {
         result = 1;
       }
 

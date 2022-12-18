@@ -15,30 +15,32 @@ WiFiUI::WiFiUI() {
   dns.start(53, THROTTLE_AP_NAME, WiFi.softAPIP());
   server.begin();
 
-  _updatedHandler = Settings.addEventListener(SettingsClass::Event::CS_CHANGE, std::bind(&WiFiUI::updated, this));
+  _updatedHandler = Settings.addEventListener(SettingsClass::Event::CS_CHANGE, [this](void*) {
+    updated();
+  });
 
   addElement<Header>(0, 40, 320, 18, "CS Settings");
 
   _labelSSID = addElement<Label>(0, 67, 320, 18, "", true);
-  _labelSSID->onRelease([this](void* parameter) {
+  _labelSSID->onRelease([this](void*) {
     keyboard("SSID", Settings.CS.SSID(), [](const String &value) {
       Settings.CS.SSID(value);
     });
   });
   _labelPassword = addElement<Label>(0, 94, 320, 18, "", true);
-  _labelPassword->onRelease([this](void* parameter) {
+  _labelPassword->onRelease([this](void*) {
     keyboard("Password", Settings.CS.password(), [](const String &value) {
       Settings.CS.password(value);
     });
   });
   _labelServer = addElement<Label>(0, 121, 320, 18, "", true);
-  _labelServer->onRelease([this](void* parameter) {
+  _labelServer->onRelease([this](void*) {
     keyboard("Server", Settings.CS.server(), [](const String &value) {
       Settings.CS.server(value);
     });
   });
   _labelPort = addElement<Label>(0, 148, 320, 18, "", true);
-  _labelPort->onRelease([this](void* parameter) {
+  _labelPort->onRelease([this](void*) {
     keypad("Port", Settings.CS.port(), [](uint16_t value) {
       Settings.CS.port(value);
     });
@@ -73,7 +75,9 @@ void WiFiUI::loop() {
 
 void WiFiUI::redraw() {
   UI::redraw();
-  drawQR();
+  if (_child == nullptr) {
+    drawQR();
+  }
 }
 
 void WiFiUI::drawQR() {
@@ -92,6 +96,10 @@ void WiFiUI::drawQR() {
 }
 
 void WiFiUI::swipe(Swipe swipe) {
+  if (_child != nullptr) {
+    return;
+  }
+
   if (swipe == Swipe::NONE || swipe == Swipe::LEFT || swipe == Swipe::RIGHT) {
     if (swipe != Swipe::NONE) {
       _alternateQR = !_alternateQR;
@@ -106,7 +114,7 @@ void WiFiUI::swipe(Swipe swipe) {
 }
 
 void WiFiUI::updated() {
-  UI::tasks.push_back([this]() {
+  UI::tasks.push_back([this] {
     String SSID("SSID: ");
     SSID += Settings.CS.SSID().isEmpty() ? "(Not Set)" : Settings.CS.SSID();
     _labelSSID->setLabel(SSID);
@@ -126,7 +134,7 @@ void WiFiUI::updated() {
 }
 
 void WiFiUI::keyboard(const String& title, const String &value, void(*setting)(const String&)) {
-  UI::tasks.push_back([this, title, value, setting]() {
+  UI::tasks.push_back([this, title, value, setting] {
     reset();
     auto keyboard = std::make_unique<Keyboard>(title, value);
     keyboard->addEventListener(Keyboard::Event::ENTER, [this, setting](void* parameter) {
@@ -137,7 +145,7 @@ void WiFiUI::keyboard(const String& title, const String &value, void(*setting)(c
       reset(true);
       Settings.dispatchEvent(SettingsClass::Event::CS_CHANGE);
     });
-    keyboard->addEventListener(Keyboard::Event::CANCEL, [this](void* parameter) {
+    keyboard->addEventListener(Keyboard::Event::CANCEL, [this](void*) {
       reset(true);
     });
     _child = std::move(keyboard);
@@ -145,7 +153,7 @@ void WiFiUI::keyboard(const String& title, const String &value, void(*setting)(c
 }
 
 void WiFiUI::keypad(const String& title, uint16_t value, void(*setting)(uint16_t)) {
-    UI::tasks.push_back([this, title, value, setting]() {
+  UI::tasks.push_back([this, title, value, setting] {
     reset();
     auto keypad = std::make_unique<Keypad>(title, 65535, 1, value);
     keypad->addEventListener(Keypad::Event::ENTER, [this, setting](void* parameter) {
@@ -156,7 +164,7 @@ void WiFiUI::keypad(const String& title, uint16_t value, void(*setting)(uint16_t
       reset(true);
       Settings.dispatchEvent(SettingsClass::Event::CS_CHANGE);
     });
-    keypad->addEventListener(Keypad::Event::CANCEL, [this](void* parameter) {
+    keypad->addEventListener(Keypad::Event::CANCEL, [this](void*) {
       reset(true);
     });
     _child = std::move(keypad);

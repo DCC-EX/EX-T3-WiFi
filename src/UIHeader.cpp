@@ -16,7 +16,7 @@ UIHeader::UIHeader() {
   addElement<Button>(290, 0, 30, 30, Button::Appearance {
     "/icons/menu.bmp",
     SPIFFS
-  })->onRelease([this](void* parameter) {
+  })->onRelease([this](void*) {
     dispatchEvent(Event::MENU);
   });
 }
