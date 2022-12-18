@@ -22,8 +22,8 @@ void DCCExCS::deleteTimeout() {
 void DCCExCS::handleCS(uint8_t* data, uint16_t size) {
   std::string str(reinterpret_cast<char*>(data), size);
   std::smatch matches;
-
-  if (std::regex_search(str, matches, std::regex("l (\\d+) -?\\d (\\d+) (\\d+)"))) { // Loco broadcast
+  
+  if (std::regex_search(str, matches, std::regex("l (\\d+) -?\\d+ (\\d+) (\\d+)"))) { // Loco broadcast
     uint16_t address = from_chars<uint16_t>(matches.str(1));
     uint8_t speedCode = from_chars<uint8_t>(matches.str(2));
     uint32_t functions = from_chars<uint32_t>(matches.str(3));
