@@ -193,15 +193,17 @@ void ProgramUI::working() {
 }
 
 void ProgramUI::result(const String& message, uint16_t color) {
-  reset();
-  _child = std::make_unique<MessageBox>(message, color, std::vector<MessageBox::Button> {
-    {
-      "Ok",
-      [this](void*) {
-        UI::tasks.push_back([this] {
-          reset(true);
-        });
-      }
-    },
+  UI::tasks.push_back([this, message, color] {
+    reset();
+    _child = std::make_unique<MessageBox>(message, color, std::vector<MessageBox::Button> {
+      {
+        "Ok",
+        [this](void*) {
+          UI::tasks.push_back([this] {
+            reset(true);
+          });
+        }
+      },
+    });
   });
 }

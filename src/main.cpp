@@ -25,8 +25,8 @@
 const uint32_t POWER_CHECK = 60000 * 2; // 2 Minutes
 const uint8_t BATTERY_PIN = A2;
 const uint8_t GESTURE_DISTANCE = 15;
-const uint16_t CONNECTION_ALIVE_DELAY = 2500;
 const uint16_t CONNECTION_TIMEOUT = 10000;
+const uint16_t CONNECTION_ALIVE_DELAY = 2000;
 
 const uint8_t ENCODER_BTN = A3;
 const uint8_t ENCODER_B = A1;
@@ -222,11 +222,12 @@ void keepConnectionsAlive(void*) {
         }
       }
       
-      if (WiFi.status() == WL_CONNECTED && !csClient.connected()) {
-        csClient.connect(Settings.CS.server().c_str(), Settings.CS.port()); 
+      if (WiFi.status() == WL_CONNECTED && csClient.disconnected() && !csClient.disconnecting() && !csClient.connecting()) {
+        csClient.connect(Settings.CS.server().c_str(), Settings.CS.port());
+        vTaskDelay(CONNECTION_TIMEOUT / portTICK_PERIOD_MS);
       }
-      vTaskDelay(CONNECTION_ALIVE_DELAY / portTICK_PERIOD_MS);
     }
+    vTaskDelay(CONNECTION_ALIVE_DELAY / portTICK_PERIOD_MS);
   }
 }
 
@@ -360,9 +361,7 @@ void setup() {
   });
   // If the connection to the CS times out then close it so it'll attempt a reconnect
   csClient.onTimeout([](void* arg, AsyncClient* client, uint32_t time) {
-    UI::tasks.push_back([] {
-      csClient.close(true);
-    });
+    csClient.close();
   });
   // CS data
   csClient.onData([](void* arg, AsyncClient* client, void* data, uint16_t len) {

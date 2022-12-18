@@ -75,7 +75,9 @@ void WiFiUI::loop() {
 
 void WiFiUI::redraw() {
   UI::redraw();
-  drawQR();
+  if (_child == nullptr) {
+    drawQR();
+  }
 }
 
 void WiFiUI::drawQR() {
@@ -94,6 +96,10 @@ void WiFiUI::drawQR() {
 }
 
 void WiFiUI::swipe(Swipe swipe) {
+  if (_child != nullptr) {
+    return;
+  }
+
   if (swipe == Swipe::NONE || swipe == Swipe::LEFT || swipe == Swipe::RIGHT) {
     if (swipe != Swipe::NONE) {
       _alternateQR = !_alternateQR;
@@ -147,7 +153,7 @@ void WiFiUI::keyboard(const String& title, const String &value, void(*setting)(c
 }
 
 void WiFiUI::keypad(const String& title, uint16_t value, void(*setting)(uint16_t)) {
-    UI::tasks.push_back([this, title, value, setting] {
+  UI::tasks.push_back([this, title, value, setting] {
     reset();
     auto keypad = std::make_unique<Keypad>(title, 65535, 1, value);
     keypad->addEventListener(Keypad::Event::ENTER, [this, setting](void* parameter) {
