@@ -19,6 +19,8 @@ void Image::draw() {
 }
 
 void Image::setImage(const String& path) {
-  _path = path;
-  draw();
+  if (_path != path) {
+    _path = path;
+    draw();
+  }
 }
