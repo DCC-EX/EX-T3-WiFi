@@ -29,7 +29,12 @@ WiFiUI::WiFiUI() {
   });
   _labelPassword = addElement<Label>(0, 94, 320, 18, "", true);
   _labelPassword->onRelease([this](void*) {
-    keyboard("Password", Settings.CS.password(), [](const String &value) {
+    #ifdef MASK_PASSWORD
+    const auto password = "";
+    #else
+    const auto& password = Settings.CS.password();
+    #endif
+    keyboard("Password", password, [](const String &value) {
       Settings.CS.password(value);
     });
   });
@@ -120,7 +125,12 @@ void WiFiUI::updated() {
     _labelSSID->setLabel(SSID);
 
     String password("Password: ");
-    password += Settings.CS.password().isEmpty() ? "(Not Set)" : Settings.CS.password();
+    password += Settings.CS.password().isEmpty() ? "(Not Set)" :
+    #ifdef MASK_PASSWORD
+    "********";
+    #else
+    Settings.CS.password();
+    #endif
     _labelPassword->setLabel(password);
 
     String server("Server: ");
