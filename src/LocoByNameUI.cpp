@@ -62,8 +62,6 @@ void LocoByNameUI::drawPagingAndButtons() {
       destroyButtons();
       drawButtons(*static_cast<uint8_t*>(parameter));
     });
-  } else {
-    _components.clear();
   }
 
   drawButtons();
@@ -74,9 +72,10 @@ void LocoByNameUI::drawButtons(uint8_t page) {
 
   uint16_t y = 70;
   uint8_t i = 0;
-
+  bool paging = _btnsDoc.size() > 8;
+  
   for (JsonObjectConst const& btn : _btnsDoc) {
-    if (divideAndCeil(++i, 7) == page) {
+    if (!paging || divideAndCeil(++i, 7) == page) {
       addElement<Button>(0, y, 320, 42, btn["name"].as<const char*>())
         ->onRelease([this, btn](void*) {
           UI::tasks.push_back([this, btn] {
