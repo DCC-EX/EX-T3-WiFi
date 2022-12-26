@@ -100,8 +100,10 @@ void LocoUI::createFunctionButtons() {
   
   uint8_t i = 0;
   uint16_t y = 92;
+  bool paging = _locoFunctions.size() > 8;
+
   for (JsonArrayConst const& row : _locoFunctions) {
-    if (divideAndCeil(++i, 7) == _page) {
+    if (!paging || divideAndCeil(++i, 7) == _page) {
       uint8_t cols = row.size();
       uint16_t width = (320 - ((cols - 1) * 7)) / cols;
 
@@ -163,9 +165,10 @@ void LocoUI::toggleFunctionButtons(std::bitset<32> toggle) {
   });
   uint8_t btnIndex = std::distance(_elements.begin(), btnFirst);
   uint8_t btnCount = _elements.size();
+  bool paging = _locoFunctions.size() > 8;
 
   for (JsonArrayConst const& row : _locoFunctions) {
-    if (divideAndCeil(++i, 7) == _page) {
+    if (!paging || divideAndCeil(++i, 7) == _page) {
       for (JsonObjectConst const& fn : row) {
         uint8_t func = fn["fn"];
         if ((fn["latching"] | true) && _loco.functions.test(func) != toggle.test(func) && btnIndex < btnCount) {
