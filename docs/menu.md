@@ -20,4 +20,4 @@
 ## Settings
   * **T3 WiFi** - Starts the throttles local WiFi, Web Server and displays the throttle connection details.\
   *To manage the configs for locos you need to be on this screen.*
-  * **Settings** - Manage the actions for swipe gestures and the screen orientation.
+  * **Settings** - Manage the throttle settings.
