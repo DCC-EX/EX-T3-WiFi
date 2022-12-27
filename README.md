@@ -36,6 +36,6 @@
 - [Throttle setup](/docs/setup.md)
 - [Managing locos](/docs/locos.md)
 - [Throttle menu](/docs/menu.md)
-- [Throttle features](/docs/features.md)
+- [Throttle settings](/docs/settings.md)
 - [Running Locos](/docs/running.md)
 - [Decoder Programming](/docs/programming.md)
