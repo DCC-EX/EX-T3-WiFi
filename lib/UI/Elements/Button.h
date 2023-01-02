@@ -62,10 +62,10 @@ class Button : public Element, public Touch {
 
     void draw();
     State getState();
-    void setState(State state);
+    void setState(State state, bool redraw = true);
     String getLabel(State state = State::IDLE) const;
-    void setLabel(const String& label);
-    void setLabel(const String& label, State state);
+    void setLabel(const String& label, bool redraw = true);
+    void setLabel(const String& label, State state, bool redraw = true);
     bool isLatching();
 };
 

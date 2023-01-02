@@ -27,17 +27,21 @@ void Label::draw() {
   UI::tft->setTextColor(oldTextColor, oldTextBGColor);
 }
 
-void Label::setLabel(const String& label) {
+void Label::setLabel(const String& label, bool redraw) {
   if (_label != label) {
     UI::tft->fillRect(Element::_x, Element::_y, Element::_w, Element::_h, TFT_BLACK);
     _label = label;
-    draw();
+    if (redraw) {
+      draw();
+    }
   }
 }
 
-void Label::setColor(uint16_t color) {
+void Label::setColor(uint16_t color, bool redraw) {
   if (_color != color) {
     _color = color;
-    draw();
+    if (redraw) {
+      draw();
+    }
   }
 }

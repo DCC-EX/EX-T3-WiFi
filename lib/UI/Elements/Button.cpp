@@ -80,10 +80,12 @@ Button::State Button::getState() {
   return _state;
 }
 
-void Button::setState(State state) {
+void Button::setState(State state, bool redraw) {
   if (state != _state && _idle != _pressed) {
     _state = state;
-    draw();
+    if (redraw) {
+      draw();
+    }
   }
 }
 
@@ -93,21 +95,27 @@ String Button::getLabel(State state) const {
     : _pressed.label;
 }
 
-void Button::setLabel(const String& label) {
+void Button::setLabel(const String& label, bool redraw) {
   if (_idle.label != label || _pressed.label != label) {
     _idle.label = label;
     _pressed.label = label;
-    draw();
+    if (redraw) {
+      draw();
+    }
   }
 }
 
-void Button::setLabel(const String& label, State state) {
+void Button::setLabel(const String& label, State state, bool redraw) {
   if (state == State::IDLE && _idle.label != label) {
     _idle.label = label;
-    draw();
+    if (redraw) {
+      draw();
+    }
   } else if (state == State::PRESSED && _pressed.label != label) {
     _pressed.label = label;
-    draw();
+    if (redraw) {
+      draw();
+    }
   }
 }
 

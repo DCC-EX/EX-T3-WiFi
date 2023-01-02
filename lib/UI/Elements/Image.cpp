@@ -18,9 +18,11 @@ void Image::draw() {
   delete img;
 }
 
-void Image::setImage(const String& path) {
+void Image::setImage(const String& path, bool redraw) {
   if (_path != path) {
     _path = path;
-    draw();
+    if (redraw) {
+      draw();
+    }
   }
 }

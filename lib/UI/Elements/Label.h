@@ -16,8 +16,8 @@ class Label : public Element, public Touch {
           const String& label = "", bool center = false, uint16_t color = TFT_WHITE);
 
     void draw();
-    void setLabel(const String& label);
-    void setColor(uint16_t color);
+    void setLabel(const String& label, bool redraw = true);
+    void setColor(uint16_t color, bool redraw = true);
 };
 
 #endif

@@ -15,8 +15,8 @@ WiFiUI::WiFiUI() {
   dns.start(53, THROTTLE_AP_NAME, WiFi.softAPIP());
   server.begin();
 
-  _updatedHandler = Settings.addEventListener(SettingsClass::Event::CS_CHANGE, [this](void*) {
-    updated();
+  _updatedHandler = Settings.addEventListener(SettingsClass::Event::CS_CHANGE, [this](void* parameter) {
+    updated(parameter == nullptr && _child == nullptr);
   });
 
   addElement<Header>(0, 40, 320, 18, "CS Settings");
@@ -79,10 +79,7 @@ void WiFiUI::loop() {
 }
 
 void WiFiUI::redraw() {
-  UI::redraw();
-  if (_child == nullptr) {
-    drawQR();
-  }
+  drawQR();
 }
 
 void WiFiUI::drawQR() {
@@ -100,11 +97,7 @@ void WiFiUI::drawQR() {
   qr.pushSprite(94, 312);
 }
 
-void WiFiUI::swipe(Swipe swipe) {
-  if (_child != nullptr) {
-    return;
-  }
-
+bool WiFiUI::swipe(Swipe swipe) {
   if (swipe == Swipe::NONE || swipe == Swipe::LEFT || swipe == Swipe::RIGHT) {
     if (swipe != Swipe::NONE) {
       _alternateQR = !_alternateQR;
@@ -116,13 +109,15 @@ void WiFiUI::swipe(Swipe swipe) {
     }
     drawQR();
   }
+
+  return true;
 }
 
-void WiFiUI::updated() {
-  UI::tasks.push_back([this] {
+void WiFiUI::updated(bool redraw) {
+  auto update = [this, redraw] {
     String SSID("SSID: ");
     SSID += Settings.CS.SSID().isEmpty() ? "(Not Set)" : Settings.CS.SSID();
-    _labelSSID->setLabel(SSID);
+    _labelSSID->setLabel(SSID, redraw);
 
     String password("Password: ");
     password += Settings.CS.password().isEmpty() ? "(Not Set)" :
@@ -131,52 +126,52 @@ void WiFiUI::updated() {
     #else
     Settings.CS.password();
     #endif
-    _labelPassword->setLabel(password);
+    _labelPassword->setLabel(password, redraw);
 
     String server("Server: ");
     server += Settings.CS.server().isEmpty() ? "(Not Set)" : Settings.CS.server();
-    _labelServer->setLabel(server);
+    _labelServer->setLabel(server, redraw);
 
     String port("Port: ");
     port += Settings.CS.port() == 0 ? "(Not Set)" : String(Settings.CS.port());
-    _labelPort->setLabel(port);
-  });
+    _labelPort->setLabel(port, redraw);
+  };
+
+  if (redraw) {
+    _tasks.push_back(update);
+  } else {
+    update();
+  }
 }
 
 void WiFiUI::keyboard(const String& title, const String &value, void(*setting)(const String&)) {
-  UI::tasks.push_back([this, title, value, setting] {
-    reset();
-    auto keyboard = std::make_unique<Keyboard>(title, value);
-    keyboard->addEventListener(Keyboard::Event::ENTER, [this, setting](void* parameter) {
-      setting(*static_cast<String*>(parameter));
-      if (Settings.CS.valid()) {
-        Settings.save();
-      }
-      reset(true);
-      Settings.dispatchEvent(SettingsClass::Event::CS_CHANGE);
-    });
-    keyboard->addEventListener(Keyboard::Event::CANCEL, [this](void*) {
-      reset(true);
-    });
-    _child = std::move(keyboard);
+  reset();
+  auto keyboard = setChild<Keyboard>(title, value);
+  keyboard->addEventListener(Keyboard::Event::ENTER, [this, setting](void* parameter) {
+    setting(*static_cast<String*>(parameter));
+    if (Settings.CS.valid()) {
+      Settings.save();
+      Settings.dispatchEvent(SettingsClass::Event::CS_CHANGE, reinterpret_cast<void*>(1));
+    }
+    reset(true);
+  });
+  keyboard->addEventListener(Keyboard::Event::CANCEL, [this](void*) {
+    reset(true);
   });
 }
 
 void WiFiUI::keypad(const String& title, uint16_t value, void(*setting)(uint16_t)) {
-  UI::tasks.push_back([this, title, value, setting] {
-    reset();
-    auto keypad = std::make_unique<Keypad>(title, 65535, 1, value);
-    keypad->addEventListener(Keypad::Event::ENTER, [this, setting](void* parameter) {
-      setting(*static_cast<uint16_t*>(parameter));
-      if (Settings.CS.valid()) {
-        Settings.save();
-      }
-      reset(true);
-      Settings.dispatchEvent(SettingsClass::Event::CS_CHANGE);
-    });
-    keypad->addEventListener(Keypad::Event::CANCEL, [this](void*) {
-      reset(true);
-    });
-    _child = std::move(keypad);
+  reset();
+  auto keypad = setChild<Keypad>(title, 65535, 1, value);
+  keypad->addEventListener(Keypad::Event::ENTER, [this, setting](void* parameter) {
+    setting(*static_cast<uint16_t*>(parameter));
+    if (Settings.CS.valid()) {
+      Settings.save();
+      Settings.dispatchEvent(SettingsClass::Event::CS_CHANGE, reinterpret_cast<void*>(1));
+    }
+    reset(true);
+  });
+  keypad->addEventListener(Keypad::Event::CANCEL, [this](void*) {
+    reset(true);
   });
 }

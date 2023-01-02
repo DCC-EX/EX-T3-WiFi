@@ -1,11 +1,11 @@
 #ifndef PAGING_H
 #define PAGING_H
 
-#include <UI.h>
+#include <Component.h>
 #include <Events.h>
 #include <Elements/Button.h>
 
-class Paging : public UI, public Events {
+class Paging : public Component, public Events {
   private:
     uint8_t _pages;
     uint8_t _page = 1;
@@ -19,9 +19,9 @@ class Paging : public UI, public Events {
       static constexpr uint8_t CHANGED = 0;
     };
 
-    Paging(uint8_t pages);
+    Paging(uint8_t pages, uint16_t x = 0, uint16_t y = 435, uint16_t w = 320);
     
-    void encoderRotate(Encoder::Rotation rotation);
+    bool encoderRotate(Encoder::Rotation rotation);
     uint8_t getPage();
 };
 

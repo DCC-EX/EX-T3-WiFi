@@ -74,7 +74,7 @@ LocoUI::~LocoUI() {
 }
 
 void LocoUI::broadcast(void* parameter) {
-  UI::tasks.push_back([this, broadcast = *static_cast<DCCExCS::Loco*>(parameter)] {
+  _tasks.push_back([this, broadcast = *static_cast<DCCExCS::Loco*>(parameter)] {
     if (broadcast.address == _loco.address) { // Broadcast for loco we're currently controlling
       if (broadcast.speed != _loco.speed) {
         _labelSpeed->setLabel(String(broadcast.speed));
@@ -181,7 +181,7 @@ void LocoUI::toggleFunctionButtons(std::bitset<32> toggle) {
   }
 }
 
-void LocoUI::encoderRotate(Encoder::Rotation rotation) {
+bool LocoUI::encoderRotate(Encoder::Rotation rotation) {
   uint8_t step;
   switch (Settings.LocoUI.speedStep) {
     case SettingsClass::LocoUI::SpeedStep::STEP_1: {
@@ -197,15 +197,19 @@ void LocoUI::encoderRotate(Encoder::Rotation rotation) {
 
   int16_t speed = _loco.speed + (rotation == Encoder::Rotation::CW ? step : -step);
   _dccExCS.setLocoThrottle(_loco.address, max<int16_t>(min<int16_t>(speed, 126), 0), _loco.direction);
+
+  return true;
 }
 
-void LocoUI::encoderPress(Encoder::ButtonPress press) {
+bool LocoUI::encoderPress(Encoder::ButtonPress press) {
   if (press == Encoder::ButtonPress::SHORT) { // Change loco direction
     _dccExCS.setLocoThrottle(_loco.address, _loco.speed, !_loco.direction);
   }
+
+  return true;
 }
 
-void LocoUI::swipe(Swipe swipe) {
+bool LocoUI::swipe(Swipe swipe) {
   switch (swipe) {
     case Swipe::UP: {
       dispatchEvent(Event::SWIPE_ACTION, &Settings.LocoUI.Swipe.up);
@@ -220,4 +224,6 @@ void LocoUI::swipe(Swipe swipe) {
       dispatchEvent(Event::SWIPE_ACTION, &Settings.LocoUI.Swipe.right);
     } break;
   }
+
+  return true;
 }

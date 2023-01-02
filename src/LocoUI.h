@@ -33,9 +33,9 @@ class LocoUI : public UI, public Events {
     LocoUI(DCCExCS& dccExCS, uint16_t address);
     ~LocoUI();
 
-    void encoderRotate(Encoder::Rotation rotation);
-    void encoderPress(Encoder::ButtonPress press);
-    void swipe(Swipe swipe);
+    bool encoderRotate(Encoder::Rotation rotation);
+    bool encoderPress(Encoder::ButtonPress press);
+    bool swipe(Swipe swipe);
 };
 
 #endif

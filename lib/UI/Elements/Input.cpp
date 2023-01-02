@@ -55,9 +55,11 @@ String Input::getValue() const {
   return _value;
 }
 
-void Input::setValue(const String& value) {
+void Input::setValue(const String& value, bool redraw) {
   _value = value;
-  drawText();
+  if (redraw) {
+    drawText();
+  }
 }
 
 uint8_t Input::length() {

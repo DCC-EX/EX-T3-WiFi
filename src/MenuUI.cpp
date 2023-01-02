@@ -5,7 +5,7 @@
 MenuUI::MenuUI(DCCExCS& dccExCS, DCCExCS::Power& power) : _dccExCS(dccExCS), _power(power) {
   _elements.reserve(17);
   _broadcastPowerHandler = dccExCS.addEventListener(DCCExCS::Event::BROADCAST_POWER, [this](void*) {
-    UI::tasks.push_back([this] {
+    _tasks.push_back([this] {
       _powerAll->setState(_power.main && _power.prog ? Btn::State::PRESSED : Btn::State::IDLE);
       _powerMain->setState(_power.main ? Btn::State::PRESSED : Btn::State::IDLE);
       _powerProg->setState(_power.prog ? Btn::State::PRESSED : Btn::State::IDLE);
@@ -77,8 +77,8 @@ MenuUI::MenuUI(DCCExCS& dccExCS, DCCExCS::Power& power) : _dccExCS(dccExCS), _po
 
   _powerJoin = addElement<Btn>(0, 336, 320, 42, "Join Tracks", true, power.join ? Btn::State::PRESSED : Btn::State::IDLE);
   _powerJoin->onRelease([this](void*) {
-      selected(Button::POWER_JOIN);
-    });
+    selected(Button::POWER_JOIN);
+  });
 
   addElement<Header>(0, 390, 320, 18, "Settings");
 

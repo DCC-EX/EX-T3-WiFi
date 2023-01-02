@@ -17,7 +17,7 @@ class Input : public Element {
     void backspace();
     void clear();
     String getValue() const;
-    void setValue(const String& value);
+    void setValue(const String& value, bool redraw = true);
     uint8_t length();
 };
 

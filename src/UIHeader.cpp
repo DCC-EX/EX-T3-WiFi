@@ -38,42 +38,46 @@ void UIHeader::updatePowerStatus() {
 void UIHeader::setPowerStatus(float voltage) {
   if (voltage > 4.0 && _powerStatus != PowerStatus::STATUS_HIGH) {
     _powerStatus = PowerStatus::STATUS_HIGH;
-    updatePowerStatus();
   } else if (voltage > 3.85 && voltage <= 3.99 && _powerStatus != PowerStatus::STATUS_MEDIUM) {
     _powerStatus = PowerStatus::STATUS_MEDIUM;
-    updatePowerStatus();
   } else if (voltage > 3.75 && voltage <= 3.84 && _powerStatus != PowerStatus::STATUS_LOW) {
     _powerStatus = PowerStatus::STATUS_LOW;
-    updatePowerStatus();
   } else if (voltage < 3.74 && _powerStatus != PowerStatus::STATUS_RECHARGE) {
     _powerStatus = PowerStatus::STATUS_RECHARGE;
-    updatePowerStatus();
   }
+
+  _tasks.push_back([this] {
+    updatePowerStatus();
+  });
 }
 
 void UIHeader::updateWiFiStatus() {
   _wifi->setImage(_wifiStatus
-      ? "/icons/wifi-connected.bmp"
-      : "/icons/wifi-disconnected.bmp");
+    ? "/icons/wifi-connected.bmp"
+    : "/icons/wifi-disconnected.bmp");
 }
 
 void UIHeader::setWiFiStatus(bool connected) {
   if (_wifiStatus != connected) {
     _wifiStatus = connected;
-    updateWiFiStatus();
+    _tasks.push_back([this] {
+      updateWiFiStatus();
+    });
   }
 }
 
 void UIHeader::updateCSStatus() {
   _cs->setImage(_csStatus
-      ? "/icons/cs-connected.bmp"
-      : "/icons/cs-disconnected.bmp");
+    ? "/icons/cs-connected.bmp"
+    : "/icons/cs-disconnected.bmp");
 }
 
 void UIHeader::setCSStatus(bool connected) {
   if (_csStatus != connected) {
     _csStatus = connected;
-    updateCSStatus();
+    _tasks.push_back([this] {
+      updateCSStatus();
+    });
   }
 }
 

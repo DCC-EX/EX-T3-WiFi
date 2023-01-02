@@ -4,70 +4,44 @@
 #include <Arduino.h>
 #include <TFT_eSPI.h>
 #include <GT911.h>
-#include <Elements/Element.h>
-#include <Elements/Button.h>
+#include <Component.h>
 
 #include <vector>
 #include <deque>
 
-class UI {
+class UI : public Component {
   public:
     static inline TFT_eSPI* tft;
-    static inline std::deque<std::function<void (void)>> tasks;
   protected:
+    std::deque<std::function<void (void)>> _tasks;
     std::unique_ptr<UI> _child;
-    std::vector<std::unique_ptr<UI>> _components;
-    std::vector<std::unique_ptr<Element>> _elements;
+    std::vector<std::unique_ptr<Component>> _components;
+
+    template <class T, typename... Args>
+    inline T* setChild(Args&&... args) {
+      _child = std::make_unique<T>(args...);
+      return static_cast<T*>(_child.get());
+    }
 
     template <class T, typename... Args>
     inline T* addComponent(Args&&... args) {
       return static_cast<T*>(_components.emplace_back(std::make_unique<T>(args...)).get());
     }
 
-    template <class T, typename... Args>
-    inline T* addElement(Args&&... args) {
-      return static_cast<T*>(_elements.emplace_back(std::make_unique<T>(args...)).get());
-    }
-
-    virtual bool touch(uint8_t count, GTPoint* points);
-    virtual bool release(uint8_t count, GTPoint* points);
+    virtual void loop(); 
   public:
-    struct Encoder {
-      enum class Rotation : uint8_t {
-        CW,
-        CCW
-      };
-      enum class ButtonState : uint8_t {
-        IDLE,
-        PRESSED,
-        RELEASED
-      };
-      enum class ButtonPress : uint8_t {
-        SHORT,
-        LONG
-      };
-    };
-
-    enum class Swipe : uint8_t {
-      NONE,
-      UP,
-      DOWN,
-      LEFT,
-      RIGHT
-    };
-
     UI();
     virtual ~UI() = default;
 
-    virtual void loop();
-    virtual void redraw();
-
+    void handleRedraw();
     bool handleTouch(uint8_t count, GTPoint* points, std::function<bool()> touched);
-    virtual void encoderRotate(Encoder::Rotation rotation);
-    virtual void encoderPress(Encoder::ButtonPress press);
-    virtual void swipe(Swipe swipe);
+    void handleEncoderRotate(Encoder::Rotation rotation);
+    void handleEncoderPress(Encoder::ButtonPress press);
+    void handleSwipe(Swipe swipe);
+    void handleTasks();
+    void handleLoop();
 
-    void reset(bool redrawAfter = false);
+    void reset(bool redraw = false);
 };
 
 #endif

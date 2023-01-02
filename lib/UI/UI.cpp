@@ -1,125 +1,126 @@
 #include <UI.h>
+#include <Touch.h>
 
 UI::UI() { }
 
 void UI::loop() { }
 
-void UI::redraw() {
-  auto redraw = [](auto& elements) {
+void UI::handleRedraw() {
+  auto redraw = [](Component* ui, auto& elements) {
     for (const auto& ptr : elements) {
       ptr->draw();
     }
+    ui->redraw();
   };
 
   if (_child != nullptr) {
-    redraw(_child->_elements);
+    _child->handleRedraw();
   } else {
-    redraw(_elements);
+    redraw(this, _elements);
     for (const auto& component : _components) {
-      redraw(component->_elements);
+      redraw(component.get(), component->_elements);
     }
   }
-}
-
-bool UI::touch(uint8_t count, GTPoint* points) {
-  auto touch = [&points](auto& elements) -> bool {
-    for (const auto& ptr : elements) {
-      auto touch = dynamic_cast<Touch*>(ptr.get());
-      if (touch != nullptr && touch->contains(points[0].x, points[0].y)) {
-        touch->touched(ptr.get());
-        return true;
-      }
-    }
-    return false;
-  };
-
-  if (_child != nullptr) {
-    return touch(_child->_elements);
-  }
-
-  if (touch(_elements)) {
-    return true;
-  }
-  for (const auto& component : _components) {
-    if (touch(component->_elements)) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-bool UI::release(uint8_t count, GTPoint* points) {
-  auto release = [&points](auto& elements) -> bool {
-    for (const auto& ptr : elements) {
-      auto touch = dynamic_cast<Touch*>(ptr.get());
-      if (touch != nullptr && touch->contains(points[0].x, points[0].y)) {
-        touch->released(ptr.get());
-        return true;
-      }
-    }
-    return false;
-  };
-
-  if (_child != nullptr) {
-    return release(_child->_elements);
-  }
-
-  if (release(_elements)) {
-    return true;
-  }
-  for (const auto& component : _components) {
-    if (release(component->_elements)) {
-      return true;
-    }
-  }
-  return false;
 }
 
 bool UI::handleTouch(uint8_t count, GTPoint* points, std::function<bool()> touched) {
-  if (touch(count, points)) {
+  auto touchElements = [&points](auto& elements, auto method) -> bool {
+    for (const auto& ptr : elements) {
+      auto touch = dynamic_cast<Touch*>(ptr.get());
+      if (touch != nullptr && touch->contains(points[0].x, points[0].y)) {
+        std::invoke(method, touch, ptr.get());
+        return true;
+      }
+    }
+    return false;
+  };
+
+  auto handleTouchMethod = [this, &touchElements](auto method) -> bool {
+    if (touchElements(_elements, method)) {
+      return true;
+    }
+    for (const auto& component : _components) {
+      if (touchElements(component->_elements, method)) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  if (_child != nullptr) {
+    return _child->handleTouch(count, points, touched);
+  } else if (touch(count, points) || handleTouchMethod(&Touch::touched)) {
     while (touched()) {
       delay(25);
     }
-    return release(count, points);
+    return release(count, points) || handleTouchMethod(&Touch::released);
   }
+
   return false;
 }
 
-void UI::encoderRotate(Encoder::Rotation rotation) {
+void UI::handleEncoderRotate(Encoder::Rotation rotation) {
   if (_child != nullptr) {
-    _child->encoderRotate(rotation);
+    _child->handleEncoderRotate(rotation);
   } else {
+    if (encoderRotate(rotation)) {
+      return;
+    }
     for (const auto& component : _components) {
       component->encoderRotate(rotation);
     }
   }
 }
 
-void UI::encoderPress(Encoder::ButtonPress press) {
+void UI::handleEncoderPress(Encoder::ButtonPress press) {
   if (_child != nullptr) {
-    _child->encoderPress(press);
+    _child->handleEncoderPress(press);
   } else {
+    if (encoderPress(press)) {
+      return;
+    }
     for (const auto& component : _components) {
       component->encoderPress(press);
     }
   }
 }
 
-void UI::swipe(Swipe swipe) {
+void UI::handleSwipe(Swipe swipe) {
   if (_child != nullptr) {
-    _child->swipe(swipe);
+    _child->handleSwipe(swipe);
   } else {
+    if (this->swipe(swipe)) {
+      return;
+    }
     for (const auto& component : _components) {
       component->swipe(swipe);
     }
   }
 }
 
-void UI::reset(bool redrawAfter) {
+void UI::handleTasks() {
+  if (_child != nullptr) {
+    _child->handleTasks();
+  }
+
+  while (!_tasks.empty()) {
+    _tasks[0]();
+    _tasks.pop_front();
+  }
+}
+
+void UI::handleLoop() {
+  if (_child != nullptr) {
+    _child->handleLoop();
+  }
+
+  loop();
+}
+
+void UI::reset(bool redraw) {
   UI::tft->fillRect(0, 30, 320, 450, TFT_BLACK);
   _child.reset();
-  if (redrawAfter) {
-    redraw();
+  if (redraw) {
+    handleRedraw();
   }
 }

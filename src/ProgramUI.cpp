@@ -27,10 +27,8 @@ ProgramUI::ProgramUI(DCCExCS& dccExCS) : _dccExCS(dccExCS) {
 
   addElement<Button>(0, 70, 157, 40, "Read Address")
     ->onRelease([this](void*) {
-      UI::tasks.push_back([this] {
-        working();
-        _dccExCS.getLocoAddress();
-      });
+      working();
+      _dccExCS.getLocoAddress();
     });
   addElement<Button>(163, 70, 157, 40, "Write Address")
     ->onRelease([this](void*) {
@@ -81,20 +79,14 @@ ProgramUI::~ProgramUI() {
 
 void ProgramUI::newStep(Step step, const String& title, uint16_t max, uint16_t min) {
   _step = step;
-  UI::tasks.push_back([this, title, max, min] {
-    reset();
-    auto keypad = std::make_unique<Keypad>(title, max, min);
-    keypad->addEventListener(Keypad::Event::ENTER, [this](void* parameter) {
-      UI::tasks.push_back([this, value = *static_cast<uint32_t*>(parameter)] {
-        keypadEnter(value); 
-      });
-    });
-    keypad->addEventListener(Keypad::Event::CANCEL, [this](void*) {
-      UI::tasks.push_back([this] {
-        reset(true);
-      });
-    });
-    _child = std::move(keypad);
+  reset();
+  auto keypad = setChild<Keypad>(title, max, min);
+  keypad->addEventListener(Keypad::Event::ENTER, [this](void* parameter) {
+    auto value = *static_cast<uint32_t*>(parameter);
+    keypadEnter(value);
+  });
+  keypad->addEventListener(Keypad::Event::CANCEL, [this](void*) {
+    reset(true);
   });
 }
 
@@ -171,7 +163,7 @@ void ProgramUI::keypadEnter(uint32_t number) {
 
 void ProgramUI::confirm(const String& message, Events::EventCallback&& callback) {
   reset();
-  _child = std::make_unique<MessageBox>(message, std::vector<MessageBox::Button> {
+  setChild<MessageBox>(message, std::vector<MessageBox::Button> {
     {
       "Yes",
       std::move(callback)
@@ -179,9 +171,7 @@ void ProgramUI::confirm(const String& message, Events::EventCallback&& callback)
     {
       "No",
       [this](void*) {
-        UI::tasks.push_back([this] {
-          reset(true);
-        });
+        reset(true);
       }
     }
   });
@@ -189,21 +179,17 @@ void ProgramUI::confirm(const String& message, Events::EventCallback&& callback)
 
 void ProgramUI::working() {
   reset();
-  _child = std::make_unique<MessageBox>("Working...", TFT_BLUE);
+  setChild<MessageBox>("Working...", TFT_BLUE);
 }
 
 void ProgramUI::result(const String& message, uint16_t color) {
-  UI::tasks.push_back([this, message, color] {
-    reset();
-    _child = std::make_unique<MessageBox>(message, color, std::vector<MessageBox::Button> {
-      {
-        "Ok",
-        [this](void*) {
-          UI::tasks.push_back([this] {
-            reset(true);
-          });
-        }
-      },
-    });
+  reset();
+  setChild<MessageBox>(message, color, std::vector<MessageBox::Button> {
+    {
+      "Ok",
+      [this](void*) {
+        reset(true);
+      }
+    },
   });
 }
