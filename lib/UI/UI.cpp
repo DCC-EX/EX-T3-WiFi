@@ -6,8 +6,8 @@ UI::UI() { }
 void UI::loop() { }
 
 void UI::handleRedraw() {
-  auto redraw = [](Component* ui, auto& elements) {
-    for (const auto& ptr : elements) {
+  auto redraw = [](Component* ui) {
+    for (const auto& ptr : ui->_elements) {
       ptr->draw();
     }
     ui->redraw();
@@ -16,9 +16,9 @@ void UI::handleRedraw() {
   if (_child != nullptr) {
     _child->handleRedraw();
   } else {
-    redraw(this, _elements);
+    redraw(this);
     for (const auto& component : _components) {
-      redraw(component.get(), component->_elements);
+      redraw(component.get());
     }
   }
 }
