@@ -3,7 +3,7 @@
 
 Label::Label(uint16_t x, uint16_t y, uint16_t w, uint16_t h,
              const String& label, bool center, uint16_t color)
-    : Element(x, y, w, h), Touch(x, y, w, h, 1), _center(center), _color(color) {
+    : Element(x, y, w, h), _center(center), _color(color) {
   // TODO, reserve label space?
   setLabel(label);
 }

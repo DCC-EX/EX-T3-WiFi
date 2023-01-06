@@ -3,17 +3,17 @@
 Keyboard::Keyboard(const String& label, const String& value) {
   _elements.reserve(46);
 
-  addElement<Header>(0, 50, 320, 18, label);
+  addElement<Header>(0, 40, 320, 18, label);
 
-  _value = addElement<Input>(0, 78, 320, 30, value);
+  _value = addElement<Input>(0, 68, 320, 30, value);
 
-  addKeyRow(1, 120, row1Keys[0]);
-  uint8_t row2Start = addKeyRow(1, 152, row2Keys[0]);
-  uint8_t row3Start = addKeyRow(17, 184, row3Keys[0]);
-  uint8_t row4Start = addKeyRow(49, 216, row4Keys[0]);
+  addKeyRow(1, 110, row1Keys[0]);
+  uint8_t row2Start = addKeyRow(1, 142, row2Keys[0]);
+  uint8_t row3Start = addKeyRow(17, 174, row3Keys[0]);
+  uint8_t row4Start = addKeyRow(49, 206, row4Keys[0]);
 
-  _shiftKey = addElement<Button>(1, 216, 46, 30, "^", true);
-  _specialKey = addElement<Button>(1, 248, 60, 30, "?!@", "ABC", true);
+  _shiftKey = addElement<Button>(1, 206, 46, 30, "^", true);
+  _specialKey = addElement<Button>(1, 238, 60, 30, "?!@", "ABC", true);
   
   // Shift - Toggle between upper and lower case
   _shiftKey->onRelease([this, row2Start, row3Start, row4Start](void* parameter) {
@@ -32,25 +32,25 @@ Keyboard::Keyboard(const String& label, const String& value) {
     changeKeyRow(row4Start, row4Keys[set]);
   });
   // Backspace
-  addElement<Button>(225 + 48, 216, 46, 30, "<")
+  addElement<Button>(273, 206, 46, 30, "<")
     ->onRelease([this](void* parameter) {
       _value->backspace();
     });
 
-  addElement<Button>(63, 248, 192, 30, " ")
+  addElement<Button>(63, 238, 192, 30, " ")
     ->onRelease([this](void* parameter) {
       addKeyToInput(parameter);
     });
-  addElement<Button>(257, 248, 30, 30, ",")
+  addElement<Button>(257, 238, 30, 30, ",")
     ->onRelease([this](void* parameter) {
       addKeyToInput(parameter);
     });
-  addElement<Button>(289, 248, 30, 30, ".")
+  addElement<Button>(289, 238, 30, 30, ".")
     ->onRelease([this](void* parameter) {
       addKeyToInput(parameter);
     });
 
-  addElement<Button>(0, 288, 157, 42, "Cancel",
+  addElement<Button>(0, 278, 157, 42, "Cancel",
     Button::Appearance {
       TFT_WHITE,
       TFT_DARKGREY,
@@ -65,7 +65,7 @@ Keyboard::Keyboard(const String& label, const String& value) {
       dispatchEvent(Event::CANCEL);
     });
 
-  addElement<Button>(163, 288, 157, 42, "Enter",
+  addElement<Button>(163, 278, 157, 42, "Enter",
     Button::Appearance {
       TFT_WHITE,
       TFT_DARKGREEN,

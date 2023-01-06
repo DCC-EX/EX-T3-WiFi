@@ -26,7 +26,7 @@ const uint32_t POWER_CHECK = 60000 * 2; // 2 Minutes
 const uint8_t BATTERY_PIN = A2;
 const uint8_t GESTURE_DISTANCE = 15;
 const uint16_t CONNECTION_TIMEOUT = 10000;
-const uint16_t CONNECTION_ALIVE_DELAY = 2000;
+const uint16_t CONNECTION_ALIVE_DELAY = 5000;
 
 const uint8_t ENCODER_BTN = A3;
 const uint8_t ENCODER_B = A1;
@@ -54,6 +54,7 @@ Locos locos;
 std::unique_ptr<UIHeader> uiHeader;
 std::unique_ptr<UI> activeUI;
 std::function<std::unique_ptr<UI>()> setUI;
+bool isMenu;
 
 void setMenuUI();
 void setLocoUI();
@@ -141,6 +142,7 @@ void setAccessoryKeypadUI(bool state) {
 
 void setMenuUI() {
   setUI = [] {
+    isMenu = true;
     auto ui = std::make_unique<MenuUI>(dccExCS, power);
     ui->addEventListener(MenuUI::Event::SELECTED, [](void* parameter) {
       switch (const auto button = *static_cast<MenuUI::Button*>(parameter)) {
@@ -383,7 +385,7 @@ void setup() {
   // Create UI Header
   uiHeader = std::make_unique<UIHeader>();
   uiHeader->addEventListener(UIHeader::Event::MENU, [](void*) {
-    if (dynamic_cast<MenuUI*>(activeUI.get()) != nullptr) { // Is current UI the menu?
+    if (isMenu) {
       if (locos != 0) { // If we're already on the menu and there's an active loco switch to the loco UI
         setLocoUI();
       }
@@ -397,6 +399,7 @@ void setup() {
 
 void loop() {
   if (setUI != nullptr) {
+    isMenu = false; // Any new UI resets this
     UI::tft->fillRect(0, 30, 320, 450, TFT_BLACK);
     activeUI.reset();
     activeUI = setUI();

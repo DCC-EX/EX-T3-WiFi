@@ -19,6 +19,7 @@ class UI : public Component {
 
     template <class T, typename... Args>
     inline T* setChild(Args&&... args) {
+      reset();
       _child = std::make_unique<T>(args...);
       return static_cast<T*>(_child.get());
     }
