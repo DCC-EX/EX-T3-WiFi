@@ -19,7 +19,7 @@ ProgramUI::ProgramUI(DCCExCS& dccExCS) : _dccExCS(dccExCS) {
     if (*static_cast<int16_t*>(parameter) == -1) {
       result("Error", TFT_RED);
     } else {
-      result(String(*static_cast<uint16_t*>(parameter)), TFT_GREEN);
+      result(String(*static_cast<int16_t*>(parameter)), TFT_GREEN);
     }
   });
 
@@ -79,14 +79,17 @@ ProgramUI::~ProgramUI() {
 
 void ProgramUI::newStep(Step step, const String& title, uint16_t max, uint16_t min) {
   _step = step;
-  reset();
-  auto keypad = setChild<Keypad>(title, max, min);
-  keypad->addEventListener(Keypad::Event::ENTER, [this](void* parameter) {
-    auto value = *static_cast<uint32_t*>(parameter);
-    keypadEnter(value);
-  });
-  keypad->addEventListener(Keypad::Event::CANCEL, [this](void*) {
-    reset(true);
+  _tasks.push_back([this, title, max, min] {
+    auto keypad = setChild<Keypad>(title, max, min);
+    keypad->addEventListener(Keypad::Event::ENTER, [this](void* parameter) {
+      auto value = *static_cast<uint32_t*>(parameter);
+      keypadEnter(value);
+    });
+    keypad->addEventListener(Keypad::Event::CANCEL, [this](void*) {
+      _tasks.push_back([this] {
+        reset(true);
+      });
+    });
   });
 }
 
@@ -162,34 +165,41 @@ void ProgramUI::keypadEnter(uint32_t number) {
 }
 
 void ProgramUI::confirm(const String& message, Events::EventCallback&& callback) {
-  reset();
-  setChild<MessageBox>(message, std::vector<MessageBox::Button> {
-    {
-      "Yes",
-      std::move(callback)
-    },
-    {
-      "No",
-      [this](void*) {
-        reset(true);
+  _tasks.push_back([this, message, callback] {
+    setChild<MessageBox>(message, std::vector<MessageBox::Button> {
+      {
+        "Yes",
+        callback
+      },
+      {
+        "No",
+        [this](void*) {
+          _tasks.push_back([this] {
+            reset(true);
+          });
+        }
       }
-    }
+    });
   });
 }
 
 void ProgramUI::working() {
-  reset();
-  setChild<MessageBox>("Working...", TFT_BLUE);
+  _tasks.push_back([this] {
+    setChild<MessageBox>("Working...", TFT_BLUE);
+  });
 }
 
 void ProgramUI::result(const String& message, uint16_t color) {
-  reset();
-  setChild<MessageBox>(message, color, std::vector<MessageBox::Button> {
-    {
-      "Ok",
-      [this](void*) {
-        reset(true);
-      }
-    },
+  _tasks.push_back([this, message, color] {
+    setChild<MessageBox>(message, color, std::vector<MessageBox::Button> {
+      {
+        "Ok",
+        [this](void*) {
+          _tasks.push_back([this] {
+            reset(true);
+          });
+        }
+      },
+    });
   });
 }

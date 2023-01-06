@@ -4,9 +4,8 @@
 #include <Arduino.h>
 #include <SD.h>
 #include <Elements/Element.h>
-#include <Touch.h>
 
-class Button : public Element, public Touch {
+class Button : public Element {
   public:
     struct Appearance {
       String label;
@@ -60,6 +59,7 @@ class Button : public Element, public Touch {
 
     Button(int16_t x, int16_t y, uint16_t w, uint16_t h, Appearance both);
 
+    inline Type getType() { return Type::Button; }
     void draw();
     State getState();
     void setState(State state, bool redraw = true);

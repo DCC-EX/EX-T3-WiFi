@@ -26,9 +26,8 @@ void UI::handleRedraw() {
 bool UI::handleTouch(uint8_t count, GTPoint* points, std::function<bool()> touched) {
   auto touchElements = [&points](auto& elements, auto method) -> bool {
     for (const auto& ptr : elements) {
-      auto touch = dynamic_cast<Touch*>(ptr.get());
-      if (touch != nullptr && touch->contains(points[0].x, points[0].y)) {
-        std::invoke(method, touch, ptr.get());
+      if (ptr->contains(points[0].x, points[0].y)) {
+        std::invoke(method, ptr, ptr.get());
         return true;
       }
     }

@@ -92,7 +92,7 @@ void LocoByNameUI::drawButtons(uint8_t page) {
 
 void LocoByNameUI::destroyButtons() {
   _elements.erase(std::remove_if(_elements.begin(), _elements.end(), [](const auto &element) {
-    return dynamic_cast<Button*>(element.get()) != nullptr;
+    return element->getType() == Element::Type::Button;
   }), _elements.end());
 }
 

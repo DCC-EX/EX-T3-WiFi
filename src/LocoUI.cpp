@@ -154,14 +154,14 @@ void LocoUI::createFunctionButtons() {
 
 void LocoUI::destroyFunctionButtons() {
   _elements.erase(std::remove_if(_elements.begin(), _elements.end(), [](const auto &element) {
-    return dynamic_cast<Button*>(element.get()) != nullptr;
+    return element->getType() == Element::Type::Button;
   }), _elements.end());
 }
 
 void LocoUI::toggleFunctionButtons(std::bitset<32> toggle) {
   uint8_t i = 0;
   auto btnFirst = std::find_if(_elements.begin(), _elements.end(), [](const auto &element) {
-    return dynamic_cast<Button*>(element.get()) != nullptr;
+    return element->getType() == Element::Type::Button;
   });
   uint8_t btnIndex = std::distance(_elements.begin(), btnFirst);
   uint8_t btnCount = _elements.size();

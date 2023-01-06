@@ -145,33 +145,43 @@ void WiFiUI::updated(bool redraw) {
 }
 
 void WiFiUI::keyboard(const String& title, const String &value, void(*setting)(const String&)) {
-  reset();
-  auto keyboard = setChild<Keyboard>(title, value);
-  keyboard->addEventListener(Keyboard::Event::ENTER, [this, setting](void* parameter) {
-    setting(*static_cast<String*>(parameter));
-    if (Settings.CS.valid()) {
-      Settings.save();
-      Settings.dispatchEvent(SettingsClass::Event::CS_CHANGE, reinterpret_cast<void*>(1));
-    }
-    reset(true);
-  });
-  keyboard->addEventListener(Keyboard::Event::CANCEL, [this](void*) {
-    reset(true);
+  _tasks.push_back([this, title, value, setting] {
+    auto keyboard = setChild<Keyboard>(title, value);
+    keyboard->addEventListener(Keyboard::Event::ENTER, [this, setting](void* parameter) {
+      setting(*static_cast<String*>(parameter));
+      if (Settings.CS.valid()) {
+        Settings.save();
+        Settings.dispatchEvent(SettingsClass::Event::CS_CHANGE, reinterpret_cast<void*>(1));
+      }
+      _tasks.push_back([this] {
+        reset(true);
+      });
+    });
+    keyboard->addEventListener(Keyboard::Event::CANCEL, [this](void*) {
+      _tasks.push_back([this] {
+        reset(true);
+      });
+    });
   });
 }
 
 void WiFiUI::keypad(const String& title, uint16_t value, void(*setting)(uint16_t)) {
-  reset();
-  auto keypad = setChild<Keypad>(title, 65535, 1, value);
-  keypad->addEventListener(Keypad::Event::ENTER, [this, setting](void* parameter) {
-    setting(*static_cast<uint16_t*>(parameter));
-    if (Settings.CS.valid()) {
-      Settings.save();
-      Settings.dispatchEvent(SettingsClass::Event::CS_CHANGE, reinterpret_cast<void*>(1));
-    }
-    reset(true);
-  });
-  keypad->addEventListener(Keypad::Event::CANCEL, [this](void*) {
-    reset(true);
+  _tasks.push_back([this, title, value, setting] {
+    auto keypad = setChild<Keypad>(title, 65535, 1, value);
+    keypad->addEventListener(Keypad::Event::ENTER, [this, setting](void* parameter) {
+      setting(*static_cast<uint16_t*>(parameter));
+      if (Settings.CS.valid()) {
+        Settings.save();
+        Settings.dispatchEvent(SettingsClass::Event::CS_CHANGE, reinterpret_cast<void*>(1));
+      }
+      _tasks.push_back([this] {
+        reset(true);
+      });
+    });
+    keypad->addEventListener(Keypad::Event::CANCEL, [this](void*) {
+      _tasks.push_back([this] {
+        reset(true);
+      });
+    });
   });
 }
