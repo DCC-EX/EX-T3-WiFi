@@ -25,7 +25,6 @@
 const uint32_t POWER_CHECK = 60000 * 2; // 2 Minutes
 const uint8_t BATTERY_PIN = A2;
 const uint8_t GESTURE_DISTANCE = 15;
-const uint16_t CONNECTION_TIMEOUT = 10000;
 const uint16_t CONNECTION_ALIVE_DELAY = 5000;
 
 const uint8_t ENCODER_BTN = A3;
@@ -204,24 +203,20 @@ void setMenuUI() {
 }
 
 // Based off the helpful blog post here, https://savjee.be/2020/02/esp32-keep-wifi-alive-with-freertos-task/
-void keepConnectionsAlive(void*) {
+void keepWiFiAlive(void*) {
   for (;;) {
     if (Settings.CS.valid()) { // Valid if we have SSID, Server & Port
       if (WiFi.status() != WL_CONNECTED) {
         WiFi.begin(Settings.CS.SSID().c_str(), Settings.CS.password().c_str());
-
-        uint32_t timeout = millis() + CONNECTION_TIMEOUT;
-        while (WiFi.status() != WL_CONNECTED && millis() < timeout) {
-          vTaskDelay(250 / portTICK_PERIOD_MS);
-        }
-      }
-      
-      if (WiFi.status() == WL_CONNECTED && csClient.disconnected() && !csClient.disconnecting() && !csClient.connecting()) {
-        csClient.connect(Settings.CS.server().c_str(), Settings.CS.port());
-        vTaskDelay(CONNECTION_TIMEOUT / portTICK_PERIOD_MS);
       }
     }
     vTaskDelay(CONNECTION_ALIVE_DELAY / portTICK_PERIOD_MS);
+  }
+}
+
+void connectToCS() {
+  if (WiFi.status() == WL_CONNECTED) {
+    csClient.connect(Settings.CS.server().c_str(), Settings.CS.port());
   }
 }
 
@@ -327,19 +322,21 @@ void setup() {
   // WiFi connected
   WiFi.onEvent([](WiFiEvent_t event, WiFiEventInfo_t info) {
     uiHeader->setWiFiStatus(true);
-  }, ARDUINO_EVENT_WIFI_STA_CONNECTED);
+    connectToCS();
+  }, ARDUINO_EVENT_WIFI_STA_GOT_IP);
   // WiFi disconnected
   WiFi.onEvent([](WiFiEvent_t event, WiFiEventInfo_t info) {
     uiHeader->setWiFiStatus(false);
   }, ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
   // CS connected
   csClient.onConnect([](void* arg, AsyncClient* client) {
-    dccExCS.getCSPower(); // Get current power status
     uiHeader->setCSStatus(true);
+    dccExCS.getCSPower(); // Get current power status
   });
   // CS disconnected
   csClient.onDisconnect([](void* arg, AsyncClient* client) {
     uiHeader->setCSStatus(false);
+    connectToCS();
   });
   // If the connection to the CS times out then close it so it'll attempt a reconnect
   csClient.onTimeout([](void* arg, AsyncClient* client, uint32_t time) {
@@ -378,7 +375,7 @@ void setup() {
   });
 
   xTaskCreatePinnedToCore(powerCheck, "powerCheck", 1024, NULL, 1, NULL, 1);
-  xTaskCreatePinnedToCore(keepConnectionsAlive, "keepConnectionsAlive", 2048, NULL, 1, NULL, 1);
+  xTaskCreatePinnedToCore(keepWiFiAlive, "keepWiFiAlive", 2048, NULL, 1, NULL, 1);
 
   // Set initial rotation before any display output
   setRotation();
