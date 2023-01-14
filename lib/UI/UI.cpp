@@ -1,8 +1,6 @@
 #include <UI.h>
 #include <Touch.h>
 
-UI::UI() { }
-
 void UI::loop() { }
 
 void UI::handleRedraw() {

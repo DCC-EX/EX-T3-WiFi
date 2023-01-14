@@ -47,6 +47,9 @@ class Component {
     virtual bool encoderRotate(Encoder::Rotation rotation);
     virtual bool encoderPress(Encoder::ButtonPress press);
     virtual bool swipe(Swipe swipe);
+
+  public:
+    virtual ~Component() = default;
 };
 
 #endif

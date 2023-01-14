@@ -31,7 +31,6 @@ class UI : public Component {
 
     virtual void loop(); 
   public:
-    UI();
     virtual ~UI() = default;
 
     void handleRedraw();
