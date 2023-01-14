@@ -2,7 +2,7 @@
 #include <UI.h>
 
 Element::Element(uint16_t x, uint16_t y, uint16_t w, uint16_t h)
-    : _x(x), _y(y), _w(w), _h(h) { }
+    : _x(x), _y(y), _w(w), _h(h), Touch(x, y, w, h, 1) { }
 
 void Element::fillBorderRoundRect(uint32_t fill, uint32_t border, uint8_t radius, uint8_t width) {
   uint16_t x = _x;

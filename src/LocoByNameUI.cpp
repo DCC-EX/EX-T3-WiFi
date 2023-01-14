@@ -78,14 +78,12 @@ void LocoByNameUI::drawButtons(uint8_t page) {
     if (!paging || divideAndCeil(++i, 7) == page) {
       addElement<Button>(0, y, 320, 42, btn["name"].as<const char*>())
         ->onRelease([this, btn](void*) {
-          UI::tasks.push_back([this, btn] {
-            if (btn.containsKey("locos")) {
-              loadGroup(btn["locos"].as<JsonArrayConst>());
-            } else {
-              uint16_t address = btn["loco"].as<uint16_t>();
-              dispatchEvent(Event::SELECTED, &address);
-            }
-          });
+          if (btn.containsKey("locos")) {
+            loadGroup(btn["locos"].as<JsonArrayConst>());
+          } else {
+            uint16_t address = btn["loco"].as<uint16_t>();
+            dispatchEvent(Event::SELECTED, &address);
+          }
         });
       y += 52;
     }
@@ -94,7 +92,7 @@ void LocoByNameUI::drawButtons(uint8_t page) {
 
 void LocoByNameUI::destroyButtons() {
   _elements.erase(std::remove_if(_elements.begin(), _elements.end(), [](const auto &element) {
-    return dynamic_cast<Button*>(element.get()) != nullptr;
+    return element->getType() == Element::Type::Button;
   }), _elements.end());
 }
 

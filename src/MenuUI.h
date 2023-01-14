@@ -3,6 +3,7 @@
 
 #include <UI.h>
 #include <Events.h>
+#include <Elements/Button.h>
 #include <DCCExCS.h>
 
 using Btn = Button;

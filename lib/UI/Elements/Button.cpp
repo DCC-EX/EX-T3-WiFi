@@ -5,7 +5,7 @@
 Button::Button(int16_t x, int16_t y, uint16_t w, uint16_t h,
                Appearance idle, Appearance pressed,
                bool latching, State state)
-    : Element(x, y, w, h), Touch(x, y, w, h, 1), _idle(idle), _pressed(pressed), _latching(latching), _state(state) {
+    : Element(x, y, w, h), _idle(idle), _pressed(pressed), _latching(latching), _state(state) {
   draw();
 
   onTouch([this](void*) {
@@ -80,10 +80,12 @@ Button::State Button::getState() {
   return _state;
 }
 
-void Button::setState(State state) {
+void Button::setState(State state, bool redraw) {
   if (state != _state && _idle != _pressed) {
     _state = state;
-    draw();
+    if (redraw) {
+      draw();
+    }
   }
 }
 
@@ -93,21 +95,27 @@ String Button::getLabel(State state) const {
     : _pressed.label;
 }
 
-void Button::setLabel(const String& label) {
+void Button::setLabel(const String& label, bool redraw) {
   if (_idle.label != label || _pressed.label != label) {
     _idle.label = label;
     _pressed.label = label;
-    draw();
+    if (redraw) {
+      draw();
+    }
   }
 }
 
-void Button::setLabel(const String& label, State state) {
+void Button::setLabel(const String& label, State state, bool redraw) {
   if (state == State::IDLE && _idle.label != label) {
     _idle.label = label;
-    draw();
+    if (redraw) {
+      draw();
+    }
   } else if (state == State::PRESSED && _pressed.label != label) {
     _pressed.label = label;
-    draw();
+    if (redraw) {
+      draw();
+    }
   }
 }
 

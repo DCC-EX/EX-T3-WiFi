@@ -31,8 +31,8 @@ class WiFiUI : public UI {
     void loop();
     void redraw();
     
-    void swipe(Swipe swipe = Swipe::NONE);
-    void updated();
+    bool swipe(Swipe swipe = Swipe::NONE);
+    void updated(bool redraw = true);
 };
 
 #endif
