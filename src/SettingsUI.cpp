@@ -1,9 +1,10 @@
 #include <SettingsUI.h>
+#include <Settings.h>
 #include <Paging.h>
+#include <Keypad.h>
 #include <Elements/Header.h>
 #include <Elements/Label.h>
 #include <Elements/Button.h>
-#include <Settings.h>
 
 SettingsUI::SettingsUI() : Page1(*this), Page2(*this) {
   _elements.reserve(20);
@@ -90,5 +91,25 @@ void SettingsUI::Page2::show() {
 
       static_cast<Button*>(parameter)->setLabel(_rotationLabels[Settings.rotation]);
       Settings.dispatchEvent(SettingsClass::Event::ROTATION_CHANGE);
+    });
+
+  _ui.addElement<Header>(0, 124, 320, 18, "Pin Protect");
+
+  _ui.addElement<Button>(0, 154, 320, 42, "Not Set", "Pin Set", false, Settings.pin == 0 ? Button::State::IDLE : Button::State::PRESSED)
+    ->onRelease([this](void* parameter) {
+      auto keypad = _ui.setChild<Keypad>("Set Pin");
+      keypad->addEventListener(Keypad::Event::ENTER, [this, btn = static_cast<Button*>(parameter)](void* parameter) {
+        Settings.pin = *static_cast<uint32_t*>(parameter);
+        btn->setState(Settings.pin == 0 ? Button::State::IDLE : Button::State::PRESSED, false);
+        _ui._tasks.push_back([this] {
+          _ui.reset(true);
+        });
+      });
+      keypad->addEventListener(Keypad::Event::CANCEL, [this, btn = static_cast<Button*>(parameter)](void*) {
+        btn->setState(Settings.pin == 0 ? Button::State::IDLE : Button::State::PRESSED, false);
+        _ui._tasks.push_back([this] {
+          _ui.reset(true);
+        });
+      });
     });
 }
