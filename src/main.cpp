@@ -15,6 +15,8 @@
 #include <UI.h>
 #include <UIHeader.h>
 #include <Keypad.h>
+#include <MessageBox.h>
+#include <Pin.h>
 #include <MenuUI.h>
 #include <WiFiUI.h>
 #include <ProgramUI.h>
@@ -57,6 +59,21 @@ bool isMenu;
 
 void setMenuUI();
 void setLocoUI();
+
+void setPinUI(uint32_t pin, const Events::EventCallback&& onValid) {
+  if (!pin) {
+    onValid(nullptr);
+  } else {
+    setUI = [pin, onValid] {
+      auto ui = std::make_unique<Pin>(pin);
+      ui->addEventListener(Pin::Event::VALID, std::move(onValid));
+      ui->addEventListener(Pin::Event::CANCEL, [](void*) {
+        setMenuUI();
+      });
+      return ui;
+    };
+  }
+}
 
 void setLocoKeypadUI(const Events::EventCallback&& onCancel) {
   setUI = [onCancel] {
@@ -187,14 +204,18 @@ void setMenuUI() {
           dccExCS.setCSPower(DCCExCS::Power::JOIN, true);
         } break;
         case MenuUI::Button::WIFI: {
-          setUI = [] {
-            return std::make_unique<WiFiUI>();
-          };
+          setPinUI(Settings.pin, [](void*) {
+            setUI = [] {
+              return std::make_unique<WiFiUI>();
+            };
+          });
         } break;
         case MenuUI::Button::SETTINGS: {
-          setUI = [] {
-            return std::make_unique<SettingsUI>();
-          };
+          setPinUI(Settings.pin, [](void*) {
+            setUI = [] {
+              return std::make_unique<SettingsUI>();
+            };
+          });
         } break;
       }
     });

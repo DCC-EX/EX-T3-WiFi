@@ -10,6 +10,7 @@ void SettingsClass::load() {
     CS.load(doc["cs"]);
     LocoUI.load(doc["locoui"]);
     rotation = doc["rotation"];
+    pin = doc["pin"];
   }
 
   json.close();
@@ -21,6 +22,7 @@ void SettingsClass::save() {
   CS.save(doc["cs"] | doc.createNestedObject("cs"));
   LocoUI.save(doc["locoui"] | doc.createNestedObject("locoui"));
   doc["rotation"] = rotation;
+  doc["pin"] = pin;
 
   File json = SD.open("/settings.json", FILE_WRITE);
   serializeJson(doc, json);

@@ -96,6 +96,7 @@ class SettingsClass : public Events {
     } LocoUI;
 
     uint8_t rotation = Rotation::STANDARD;
+    uint32_t pin = 0;
 };
 
 extern SettingsClass Settings;

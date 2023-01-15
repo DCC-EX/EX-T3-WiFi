@@ -34,6 +34,8 @@ class SettingsUI : public UI {
       #else
       char _rotationLabels[2][9] = { "Standard", "Inverted" };
       #endif
+
+      char _pinLabels[2][8] = { "Not Set", "Pin Set" };
     public:
       void show();
     } Page2;

@@ -1,17 +1,25 @@
 #include <Keypad.h>
+#include <algorithm>
 
-Keypad::Keypad(const String& label, uint16_t max, uint16_t min, uint16_t* value) : _maxValue(max), _minValue(min) {
+Keypad::Keypad(const String& label, uint32_t max, uint32_t min, uint32_t* value)
+    : _maxValue(std::min<uint32_t>(999999999, max)), _minValue(min) {
   _elements.reserve(17);
 
   addElement<Header>(0, 40, 320, 18, label);
 
-  _number = addElement<Input>(0, 68, 320, 30, value == nullptr ? "" : String(*value));
+  _number = addElement<Input>(0, 68, 320, 30, value != nullptr && isValid(*value) ? String(*value) : "");
 
-  String range("Range ");
-  range += min;
-  range += " - ";
-  range += max;
-  addElement<Header>(0, 108, 320, 18, range);
+  if (!_minValue && !_maxValue) {
+    String digits("Max Digits - ");
+    digits += MAX_DIGITS;
+    addElement<Header>(0, 108, 320, 18, digits);
+  } else {
+    String range("Range ");
+    range += _minValue;
+    range += " - ";
+    range += _maxValue;
+    addElement<Header>(0, 108, 320, 18, range);
+  }
 
   // Number buttons
   uint16_t x = 0;
@@ -91,19 +99,23 @@ Keypad::Keypad(const String& label, uint16_t max, uint16_t min, uint16_t* value)
       TFT_WHITE
     })
     ->onRelease([this](void* parameter) {
-      uint32_t valid = getNumber();
-      if (valid >= _minValue && valid <= _maxValue) {
-        dispatchEvent(Event::ENTER, &valid);
+      uint32_t value = getNumber();
+      if (isValid(value)) {
+        dispatchEvent(Event::ENTER, &value);
       }
     });
 }
 
-Keypad::Keypad(const String& label, uint16_t max, uint16_t min) : Keypad(label, max, min, nullptr) { }
+Keypad::Keypad(const String& label, uint32_t max, uint32_t min) : Keypad(label, max, min, nullptr) { }
 
-Keypad::Keypad(const String& label, uint16_t max, uint16_t min, uint16_t value) : Keypad(label, max, min, &value) { }
+Keypad::Keypad(const String& label, uint32_t max, uint32_t min, uint32_t value) : Keypad(label, max, min, &value) { }
+
+bool Keypad::isValid(uint32_t value) {
+  return (!_minValue && !_maxValue) || (value >= _minValue && value <= _maxValue);
+}
 
 void Keypad::keyPress(uint8_t number) {
-  if (_number->length() < MAX_DIGITS - 1) {
+  if (_number->length() < MAX_DIGITS) {
     _number->add(_numberLabels[number][0]);
   }
 }
@@ -113,5 +125,7 @@ uint32_t Keypad::getNumber() {
 }
 
 void Keypad::setNumber(uint32_t value) {
-  _number->setValue(String(value));
+  if (isValid(value)) {
+    _number->setValue(String(value));
+  }
 }
