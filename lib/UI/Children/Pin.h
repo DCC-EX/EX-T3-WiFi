@@ -1,7 +1,7 @@
 #ifndef PIN_H
 #define PIN_H
 
-#include <Keypad.h>
+#include <Children/Keypad.h>
 
 class Pin : public Keypad {
   private:

@@ -2,6 +2,7 @@
 #include <SD.h>
 #include <StreamUtils.h>
 #include <Settings.h>
+#include <Components/Paging.h>
 #include <Elements/Header.h>
 #include <Elements/Button.h>
 #include <Functions.h>

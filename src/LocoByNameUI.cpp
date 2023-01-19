@@ -1,6 +1,7 @@
 #include <LocoByNameUI.h>
 #include <StreamUtils.h>
 #include <Functions.h>
+#include <Components/Paging.h>
 #include <Elements/Header.h>
 
 LocoByNameUI::LocoByNameUI(bool groups) {

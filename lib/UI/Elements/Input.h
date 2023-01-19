@@ -1,7 +1,7 @@
 #ifndef INPUT_H
 #define INPUT_H
 
-#include <Elements/Element.h>
+#include <Element.h>
 
 class Input : public Element {
   private:

@@ -1,4 +1,4 @@
-#include <MessageBox.h>
+#include <Children/MessageBox.h>
 #include <Elements/Label.h>
 
 MessageBox::MessageBox(const String& message, uint16_t color, std::vector<Button> buttons) {

@@ -3,7 +3,6 @@
 
 #include <UI.h>
 #include <DCCExCS.h>
-#include <Keypad.h>
 
 class ProgramUI : public UI {
   public:

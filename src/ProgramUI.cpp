@@ -1,6 +1,7 @@
 #include <ProgramUI.h>
+#include <Children/Keypad.h>
+#include <Children/MessageBox.h>
 #include <Elements/Button.h>
-#include <MessageBox.h>
 
 ProgramUI::ProgramUI(DCCExCS& dccExCS) : _dccExCS(dccExCS) {
   _elements.reserve(11);

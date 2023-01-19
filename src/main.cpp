@@ -14,9 +14,9 @@
 #include <Locos.h>
 #include <UI.h>
 #include <UIHeader.h>
-#include <Keypad.h>
-#include <MessageBox.h>
-#include <Pin.h>
+#include <Children/Keypad.h>
+#include <Children/MessageBox.h>
+#include <Children/Pin.h>
 #include <MenuUI.h>
 #include <WiFiUI.h>
 #include <ProgramUI.h>
