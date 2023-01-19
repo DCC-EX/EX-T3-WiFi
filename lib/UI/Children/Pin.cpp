@@ -1,5 +1,5 @@
-#include <Pin.h>
-#include <MessageBox.h>
+#include <Children/Pin.h>
+#include <Children/MessageBox.h>
 
 Pin::Pin(uint32_t pin) : Keypad("Enter Pin"), _pin(pin) {
   addEventListener(Event::ENTER, [this](void* parameter) {

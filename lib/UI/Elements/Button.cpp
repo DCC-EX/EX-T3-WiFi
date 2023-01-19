@@ -51,7 +51,8 @@ void Button::draw() {
   textX = (Element::_x + ((Element::_w - textW) / 2));
   textY = (Element::_y + ((Element::_h - textH) / 2)) + 2;
 
-  fillBorderRoundRect(appearance.fill, appearance.border);
+  UI::tft->fillRect(Element::_x, Element::_y, Element::_w, Element::_h, TFT_BLACK);
+  fillBorderRoundRect(appearance.fill, appearance.border.color, appearance.border.radius, 2, appearance.border.quadrants);
 
   if (appearance.icon.length()) {
     ImgHandler* img = ImgHandler::load(appearance.fs.open(appearance.icon));

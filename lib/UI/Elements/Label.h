@@ -2,7 +2,7 @@
 #define LABEL_H
 
 #include <Arduino.h>
-#include <Elements/Element.h>
+#include <Element.h>
 
 class Label : public Element {
   private:

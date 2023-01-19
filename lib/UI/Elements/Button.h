@@ -3,21 +3,38 @@
 
 #include <Arduino.h>
 #include <SD.h>
-#include <Elements/Element.h>
+#include <Element.h>
 
 class Button : public Element {
   public:
     struct Appearance {
+      struct Border {
+        uint16_t color;
+        uint8_t radius;
+        uint8_t quadrants;
+
+        Border(uint16_t color, uint8_t radius = 4, uint8_t quadrants = 0xF)
+            : color(color), radius(radius), quadrants(quadrants) { }
+
+        bool operator == (const Border& rhs) {
+          return color == rhs.color && radius == rhs.radius && quadrants == rhs.quadrants;
+        }
+
+        bool operator != (const Border& rhs) {
+          return !(*this == rhs);
+        }
+      };
+
       String label;
       String icon;
       uint16_t color;
       uint16_t fill;
-      uint16_t border;
+      Border border;
       fs::FS& fs;
 
-      Appearance(const String& label, uint16_t color, uint16_t fill, uint16_t border, const String& icon = "", fs::FS& fs = SD)
+      Appearance(const String& label, uint16_t color, uint16_t fill, Border border, const String& icon = "", fs::FS& fs = SD)
           : label(label), color(color), fill(fill), border(border), icon(icon), fs(fs) { }
-      Appearance(uint16_t color, uint16_t fill, uint16_t border, const String& icon = "", fs::FS& fs = SD)
+      Appearance(uint16_t color, uint16_t fill, Border border, const String& icon = "", fs::FS& fs = SD)
           : color(color), fill(fill), border(border), icon(icon), fs(fs) { }
       Appearance(const String& icon, fs::FS& fs = SD)
           : color(TFT_BLACK), fill(TFT_BLACK), border(TFT_BLACK), icon(icon), fs(fs) { }

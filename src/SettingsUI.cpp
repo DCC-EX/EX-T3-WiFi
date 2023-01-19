@@ -1,7 +1,7 @@
 #include <SettingsUI.h>
 #include <Settings.h>
-#include <Paging.h>
-#include <Keypad.h>
+#include <Components/Paging.h>
+#include <Children/Keypad.h>
 #include <Elements/Header.h>
 #include <Elements/Label.h>
 #include <Elements/Button.h>
