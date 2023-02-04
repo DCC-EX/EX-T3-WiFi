@@ -43,3 +43,7 @@ Enter a pin and press `Enter` to set it or `Cancel` to go back to the settings.
 To remove a pin press the button when it reads `Pin Set` to show the keypad then just press `Enter`. This will remove the pin and the button will change to `Not Set`.
 
 > If you forget your pin it's stored in the `settings.json` file on the MicroSD card so can be read or reset.
+
+## Emergency Stop Trigger Hold Duration
+
+The milisecond count the encoder is pressed for to trigger an emergency stop of all locos (can be between 1000 - 5000 miliseconds).

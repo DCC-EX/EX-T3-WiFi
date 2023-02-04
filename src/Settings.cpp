@@ -9,8 +9,9 @@ void SettingsClass::load() {
   if (error == DeserializationError::Ok) {
     CS.load(doc["cs"]);
     LocoUI.load(doc["locoui"]);
-    rotation = doc["rotation"];
-    pin = doc["pin"];
+    rotation = doc["rotation"] | rotation;
+    pin = doc["pin"] | pin;
+    emergencyStop = doc["emergencyStop"] | emergencyStop;
   }
 
   json.close();
@@ -23,6 +24,7 @@ void SettingsClass::save() {
   LocoUI.save(doc["locoui"] | doc.createNestedObject("locoui"));
   doc["rotation"] = rotation;
   doc["pin"] = pin;
+  doc["emergencyStop"] = emergencyStop;
 
   File json = SD.open("/settings.json", FILE_WRITE);
   serializeJson(doc, json);
@@ -92,7 +94,7 @@ void SettingsClass::CS::port(uint16_t value) {
 }
 
 void SettingsClass::LocoUI::load(const JsonObject &obj) {
-  speedStep = obj["step"];
+  speedStep = obj["step"] | speedStep;
   Swipe.load(obj["swipe"]);
 }
 
@@ -102,12 +104,12 @@ void SettingsClass::LocoUI::save(const JsonObject &obj) {
 }
 
 void SettingsClass::LocoUI::Swipe::load(const JsonObject &obj) {
-  up = obj["up"];
-  down = obj["down"];
-  left = obj["left"];
-  right = obj["right"];
+  up = obj["up"] | up;
+  down = obj["down"] | down;
+  left = obj["left"] | left;
+  right = obj["right"] | right;
 
-  release = obj["release"];
+  release = obj["release"] | release;
 }
 
 void SettingsClass::LocoUI::Swipe::save(const JsonObject &obj) {

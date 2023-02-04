@@ -97,6 +97,7 @@ class SettingsClass : public Events {
 
     uint8_t rotation = Rotation::STANDARD;
     uint32_t pin = 0;
+    uint16_t emergencyStop = 2000;
 };
 
 extern SettingsClass Settings;
