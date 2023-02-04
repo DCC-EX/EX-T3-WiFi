@@ -485,7 +485,7 @@ void loop() {
   } else if (encoder->read() <= -4) {
     activeUI->handleEncoderRotate(UI::Encoder::Rotation::CCW);
     encoder->write(0);
-  } else if (encoderBtnState == UI::Encoder::ButtonState::PRESSED && millis() - encoderPressMillis > 2000) { // Encoder pressed and held for more than 2 seconds
+  } else if (encoderBtnState == UI::Encoder::ButtonState::PRESSED && millis() - encoderPressMillis > Settings.emergencyStop) { // Encoder pressed and held for set duration
     encoderBtnState = UI::Encoder::ButtonState::IDLE;
     dccExCS.emergencyStopAll(); // Stop all locos
     activeUI->handleEncoderPress(UI::Encoder::ButtonPress::LONG);

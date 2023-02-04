@@ -93,7 +93,7 @@ void SettingsUI::Page2::show() {
       Settings.dispatchEvent(SettingsClass::Event::ROTATION_CHANGE);
     });
 
-  _ui.addElement<Header>(0, 124, 320, 18, "Pin Protect");
+  _ui.addElement<Header>(0, 124, 320, 18, "Pin Protect (For WiFi and Settings)");
 
   _ui.addElement<Button>(0, 154, 320, 42, "Not Set", "Pin Set", false, Settings.pin == 0 ? Button::State::IDLE : Button::State::PRESSED)
     ->onRelease([this](void* parameter) {
@@ -107,6 +107,25 @@ void SettingsUI::Page2::show() {
       });
       keypad->addEventListener(Keypad::Event::CANCEL, [this, btn = static_cast<Button*>(parameter)](void*) {
         btn->setState(Settings.pin == 0 ? Button::State::IDLE : Button::State::PRESSED, false);
+        _ui._tasks.push_back([this] {
+          _ui.reset(true);
+        });
+      });
+    });
+
+    _ui.addElement<Header>(0, 208, 320, 18, "Emergency Stop Trigger Hold Duration");
+
+    _ui.addElement<Button>(0, 238, 320, 42, String(Settings.emergencyStop))
+    ->onRelease([this](void* parameter) {
+      auto duration = _ui.setChild<Keypad>("Set Duration", 5000, 1000);
+      duration->addEventListener(Keypad::Event::ENTER, [this, btn = static_cast<Button*>(parameter)](void* parameter) {
+        Settings.emergencyStop = *static_cast<uint16_t*>(parameter);
+        btn->setLabel(String(Settings.emergencyStop));
+        _ui._tasks.push_back([this] {
+          _ui.reset(true);
+        });
+      });
+      duration->addEventListener(Keypad::Event::CANCEL, [this, btn = static_cast<Button*>(parameter)](void*) {
         _ui._tasks.push_back([this] {
           _ui.reset(true);
         });

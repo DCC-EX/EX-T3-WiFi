@@ -13,4 +13,4 @@ The dial on the throttle is used to control the speed and direction.
 * Turn counterclockwise to decrease speed
 * Press once to change the loco direction
 
-> Press and hold the dial for 2 seconds to stop all locos
+> Press and hold the dial to emergency stop all locos, the default is a 2 second hold but this can be changed in the throttle settings
