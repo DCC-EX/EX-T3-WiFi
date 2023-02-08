@@ -2,7 +2,10 @@
 #define SETTINGS_H
 
 #include <Events.h>
+#if __has_include(<ThrottleWiFiSettings.h>)
+// TODO, deprecate
 #include <ThrottleWiFiSettings.h>
+#endif
 #include <IPAddress.h>
 #include <ArduinoJson.h>
 
@@ -19,12 +22,46 @@ class SettingsClass : public Events {
       static constexpr uint8_t ACCELEROMETER = 2;
       #endif
     };
-  public:
+
+    uint8_t rotation = Rotation::STANDARD;
+    uint32_t pin = 0;
+    uint16_t emergencyStop = 2000;
+
     void load();
     void save();
 
+    struct AP {
+      friend class SettingsClass;
+
+      String SSID;
+      String password;
+
+      private:
+        void load(const JsonObject &obj);
+        void save(const JsonObject &obj); 
+    } AP;
+
     struct CS {
       friend class SettingsClass;
+        
+      bool valid();
+
+      String SSID() const;
+      bool SSID(const String &value);
+
+      String password() const;
+      bool password(const String &value);
+
+      String server() const;
+      bool server(const String &value);
+
+      uint16_t port() const;
+      void port(uint16_t value);
+    
+      CS() {
+        _ssid.reserve(32);
+        _password.reserve(63);
+      }
 
       private:
         String _ssid;
@@ -34,70 +71,47 @@ class SettingsClass : public Events {
 
         void load(const JsonObject &obj);
         void save(const JsonObject &obj);
-      public:
-        bool valid();
-
-        String SSID() const;
-        bool SSID(const String &value);
-
-        String password() const;
-        bool password(const String &value);
-
-        String server() const;
-        bool server(const String &value);
-
-        uint16_t port() const;
-        void port(uint16_t value);
-      
-        CS() {
-          _ssid.reserve(32);
-          _password.reserve(63);
-        }
     } CS;
 
     struct LocoUI {
       friend class SettingsClass;
-      
+
+      struct SpeedStep {
+        static constexpr uint8_t STEP_1 = 0;
+        static constexpr uint8_t STEP_2 = 1;
+        static constexpr uint8_t STEP_4 = 2;
+      };
+
+      uint8_t speedStep = SpeedStep::STEP_1;
+
+      struct Swipe {
+        friend class SettingsClass::LocoUI;
+
+        struct Action {
+          static constexpr uint8_t KEYPAD = 0;
+          static constexpr uint8_t NAME = 1;
+          static constexpr uint8_t GROUP = 2;
+          static constexpr uint8_t NEXT = 3;
+          static constexpr uint8_t PREV = 4;
+          static constexpr uint8_t RELEASE = 5;
+        };
+
+        uint8_t up = Action::RELEASE;
+        uint8_t down = Action::KEYPAD;
+        uint8_t left = Action::NEXT;
+        uint8_t right = Action::PREV;
+
+        uint8_t release = Action::KEYPAD;
+
+        private:
+          void load(const JsonObject &obj);
+          void save(const JsonObject &obj);  
+      } Swipe;
+
       private:
         void load(const JsonObject &obj);
         void save(const JsonObject &obj);
-      public:
-        struct SpeedStep {
-          static constexpr uint8_t STEP_1 = 0;
-          static constexpr uint8_t STEP_2 = 1;
-          static constexpr uint8_t STEP_4 = 2;
-        };
-
-        uint8_t speedStep = SpeedStep::STEP_1;
-
-        struct Swipe {
-          friend class SettingsClass::LocoUI;
-
-          private:
-            void load(const JsonObject &obj);
-            void save(const JsonObject &obj);
-          public:
-            struct Action {
-              static constexpr uint8_t KEYPAD = 0;
-              static constexpr uint8_t NAME = 1;
-              static constexpr uint8_t GROUP = 2;
-              static constexpr uint8_t NEXT = 3;
-              static constexpr uint8_t PREV = 4;
-              static constexpr uint8_t RELEASE = 5;
-            };
-
-            uint8_t up = Action::RELEASE;
-            uint8_t down = Action::KEYPAD;
-            uint8_t left = Action::NEXT;
-            uint8_t right = Action::PREV;
-
-            uint8_t release = Action::KEYPAD;
-        } Swipe;
     } LocoUI;
-
-    uint8_t rotation = Rotation::STANDARD;
-    uint32_t pin = 0;
-    uint16_t emergencyStop = 2000;
 };
 
 extern SettingsClass Settings;

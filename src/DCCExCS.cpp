@@ -24,9 +24,9 @@ void DCCExCS::handleCS(uint8_t* data, uint16_t size) {
   std::smatch matches;
   
   if (std::regex_search(str, matches, std::regex("l (\\d+) -?\\d+ (\\d+) (\\d+)"))) { // Loco broadcast
-    uint16_t address = from_chars<uint16_t>(matches.str(1));
-    uint8_t speedCode = from_chars<uint8_t>(matches.str(2));
-    uint32_t functions = from_chars<uint32_t>(matches.str(3));
+    uint16_t address = fromChars<uint16_t>(matches.str(1));
+    uint8_t speedCode = fromChars<uint8_t>(matches.str(2));
+    uint32_t functions = fromChars<uint32_t>(matches.str(3));
 
     Loco loco(address, speedCode, functions);
     dispatchEvent(Event::BROADCAST_LOCO, &loco);
@@ -109,7 +109,7 @@ void DCCExCS::getLocoAddress() {
   _response = {
     "r (-?\\d+)",
     [this](std::smatch &matches) {
-      int16_t result = from_chars<int16_t>(matches.str(1));
+      int16_t result = fromChars<int16_t>(matches.str(1));
       dispatchEvent(DCCExCS::Event::PROGRAM_READ, &result);
     }
   };
@@ -124,7 +124,7 @@ void DCCExCS::setLocoAddress(uint16_t address) {
     "w (-?\\d+)",
     [this, address](std::smatch &matches) {
       int16_t result = -1;
-      if (from_chars<int16_t>(matches.str(1)) == address) {
+      if (fromChars<int16_t>(matches.str(1)) == address) {
         result = 1;
       }
 
@@ -144,8 +144,8 @@ void DCCExCS::getLocoCVByte(uint16_t cv) {
     "r12345\\|32767\\|(\\d+) (-?\\d+)",
     [this, cv](std::smatch &matches) {
       int16_t result = -1;
-      if (from_chars<uint16_t>(matches.str(1)) == cv) {
-        result = from_chars<int16_t>(matches.str(2));
+      if (fromChars<uint16_t>(matches.str(1)) == cv) {
+        result = fromChars<int16_t>(matches.str(2));
       }
 
       dispatchEvent(DCCExCS::Event::PROGRAM_READ, &result);
@@ -164,8 +164,8 @@ void DCCExCS::setLocoCVByte(uint16_t cv, uint8_t value) {
     "r (\\d+) (-?\\d+)",
     [this, cv, value](std::smatch &matches) {
       int16_t result = -1;
-      if (from_chars<uint16_t>(matches.str(1)) == cv &&
-          from_chars<uint8_t>(matches.str(2)) == value) {
+      if (fromChars<uint16_t>(matches.str(1)) == cv &&
+          fromChars<uint8_t>(matches.str(2)) == value) {
         result = 1;
       }
 
@@ -185,8 +185,8 @@ void DCCExCS::getLocoCVBit(uint16_t cv, uint8_t bit) {
     "r12345\\|32767\\|(\\d+) (-?\\d+)",
     [this, cv, bit](std::smatch &matches) {
       int16_t result = -1;
-      if (from_chars<uint16_t>(matches.str(1)) == cv) {
-        uint8_t value = from_chars<uint8_t>(matches.str(2));
+      if (fromChars<uint16_t>(matches.str(1)) == cv) {
+        uint8_t value = fromChars<uint8_t>(matches.str(2));
         result = (value >> bit) & 1;
       }
 
@@ -206,9 +206,9 @@ void DCCExCS::setLocoCVBit(uint16_t cv, uint8_t bit, bool value) {
     "r12345\\|32767\\|(\\d+) (\\d+) (-?\\d+)",
     [this, cv, bit, value](std::smatch &matches) {
       int16_t result = -1;
-      if (from_chars<uint16_t>(matches.str(1)) == cv &&
-          from_chars<uint8_t>(matches.str(2)) == bit &&
-          from_chars<uint8_t>(matches.str(3)) == value) {
+      if (fromChars<uint16_t>(matches.str(1)) == cv &&
+          fromChars<uint8_t>(matches.str(2)) == bit &&
+          fromChars<uint8_t>(matches.str(3)) == value) {
         result = 1;
       }
 

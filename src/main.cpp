@@ -336,7 +336,7 @@ void setup() {
   encoder = new Encoder(ENCODER_B, ENCODER_A);
 
   // Setup the WiFi
-  WiFi.setHostname(THROTTLE_AP_NAME);
+  WiFi.setHostname(Settings.AP.SSID.c_str());
   WiFi.persistent(false);
   WiFi.mode(WIFI_STA);
   

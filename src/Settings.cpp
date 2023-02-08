@@ -1,5 +1,6 @@
 #include <Settings.h>
 #include <SD.h>
+#include <Functions.h>
 
 void SettingsClass::load() {
   File json = SD.open("/settings.json");
@@ -7,28 +8,64 @@ void SettingsClass::load() {
   DeserializationError error = deserializeJson(doc, json);
 
   if (error == DeserializationError::Ok) {
-    CS.load(doc["cs"]);
-    LocoUI.load(doc["locoui"]);
     rotation = doc["rotation"] | rotation;
     pin = doc["pin"] | pin;
     emergencyStop = doc["emergencyStop"] | emergencyStop;
+
+    AP.load(doc["ap"]);
+    CS.load(doc["cs"]);
+    LocoUI.load(doc["locoui"]);
   }
 
   json.close();
+
+  // Generate ap ssid and password if it doesn't already exist
+  if (AP.SSID.isEmpty() && AP.password.isEmpty()) {
+    char buf[9] = { 0 };
+    // TODO, Bit of backwards compatibility, will be removed in future release
+    #ifndef THROTTLE_AP_NAME
+    randomChars(buf, 4);
+    AP.SSID = "DCCEx-T3-";
+    AP.SSID += buf;
+    #else
+    AP.SSID = THROTTLE_AP_NAME;
+    #endif
+
+    #ifndef THROTTLE_AP_PWD
+    randomChars(buf, 8);
+    AP.password = buf;
+    #else
+    AP.password = THROTTLE_AP_PWD;
+    #endif
+
+    save();
+  }
 }
 
 void SettingsClass::save() {
   StaticJsonDocument<2048> doc;
 
-  CS.save(doc["cs"] | doc.createNestedObject("cs"));
-  LocoUI.save(doc["locoui"] | doc.createNestedObject("locoui"));
   doc["rotation"] = rotation;
   doc["pin"] = pin;
   doc["emergencyStop"] = emergencyStop;
 
+  AP.save(doc["ap"] | doc.createNestedObject("ap"));
+  CS.save(doc["cs"] | doc.createNestedObject("cs"));
+  LocoUI.save(doc["locoui"] | doc.createNestedObject("locoui"));
+  
   File json = SD.open("/settings.json", FILE_WRITE);
   serializeJson(doc, json);
   json.close();
+}
+
+void SettingsClass::AP::load(const JsonObject &obj) {
+  SSID = obj["ssid"] | "";
+  password = obj["password"] | "";
+}
+
+void SettingsClass::AP::save(const JsonObject &obj) {
+  obj["ssid"] = SSID;
+  obj["password"] = password;
 }
 
 bool SettingsClass::CS::valid() {
