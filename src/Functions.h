@@ -11,10 +11,19 @@ inline uint8_t divideAndCeil(uint8_t i, uint8_t div) {
 }
 
 template <typename T>
-inline T from_chars(std::string str) {
+inline T fromChars(std::string str) {
   T result;
   std::from_chars(str.c_str(), str.c_str() + str.size(), result);
   return result;
 };
+
+inline void randomChars(char* buf, uint8_t len, const char* set = "abcdefghijklmnopqrstuvwxyz0123456789") {
+  uint8_t setLen = strlen(set);
+
+  for (uint8_t i = 0; i < len; i++) {
+    uint8_t r = esp_random() % (setLen - 1);
+    buf[i] = set[r];
+  }
+}
 
 #endif

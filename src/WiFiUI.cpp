@@ -10,9 +10,9 @@ WiFiUI::WiFiUI() {
   _elements.reserve(11);
 
   WiFi.mode(WIFI_AP_STA);
-  WiFi.softAP(THROTTLE_AP_NAME, THROTTLE_AP_PWD);
+  WiFi.softAP(Settings.AP.SSID.c_str(), Settings.AP.password.c_str());
   
-  dns.start(53, THROTTLE_AP_NAME, WiFi.softAPIP());
+  dns.start(53, Settings.AP.SSID.c_str(), WiFi.softAPIP());
   server.begin();
 
   _updatedHandler = Settings.addEventListener(SettingsClass::Event::CS_CHANGE, [this](void* parameter) {
@@ -53,9 +53,9 @@ WiFiUI::WiFiUI() {
 
   addElement<Header>(0, 175, 320, 18, "Throttle AP Settings");
 
-  addElement<Label>(0, 202, 320, 18, "SSID: " THROTTLE_AP_NAME, true);
-  addElement<Label>(0, 229, 320, 18, "Password: " THROTTLE_AP_PWD, true);
-  addElement<Label>(0, 256, 320, 18, "http://" THROTTLE_AP_NAME, true);
+  addElement<Label>(0, 202, 320, 18, String("SSID: ") += Settings.AP.SSID, true);
+  addElement<Label>(0, 229, 320, 18, String("Password: ") += Settings.AP.password, true);
+  addElement<Label>(0, 256, 320, 18, String("http://") += Settings.AP.SSID, true);
 
   _labelScan = addElement<Label>(0, 283, 320, 18, "", true);
 
@@ -90,9 +90,9 @@ void WiFiUI::drawQR() {
   if (_alternateQR) {
     // https://en.wikipedia.org/wiki/QR_code#Joining_a_Wi%E2%80%91Fi_network
     // WIFI:S:MySSID;T:WPA;P:MyPassW0rd;;
-    qrcode.create("WIFI:S:" THROTTLE_AP_NAME ";T:WPA;P:" THROTTLE_AP_PWD ";;");
+    qrcode.create(String("WIFI:S:") += Settings.AP.SSID += String(";T:WPA;P:") += Settings.AP.password += String(";;"));
   } else {
-    qrcode.create("http://" THROTTLE_AP_NAME);
+    qrcode.create(String("http://") += Settings.AP.SSID);
   }
   qr.pushSprite(94, 312);
 }
