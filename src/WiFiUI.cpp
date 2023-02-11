@@ -90,7 +90,12 @@ void WiFiUI::drawQR() {
   if (_alternateQR) {
     // https://en.wikipedia.org/wiki/QR_code#Joining_a_Wi%E2%80%91Fi_network
     // WIFI:S:MySSID;T:WPA;P:MyPassW0rd;;
-    qrcode.create(String("WIFI:S:") += Settings.AP.SSID += String(";T:WPA;P:") += Settings.AP.password += String(";;"));
+    String SSID("WIFI:S:");
+    SSID += Settings.AP.SSID;
+    SSID += ";T:WPA;P:";
+    SSID += Settings.AP.password;
+    SSID += ";;";
+    qrcode.create(SSID);
   } else {
     qrcode.create(String("http://") += Settings.AP.SSID);
   }
