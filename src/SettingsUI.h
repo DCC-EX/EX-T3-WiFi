@@ -29,12 +29,7 @@ class SettingsUI : public UI {
     class Page2 : Page {
       using Page::Page;
 
-      #ifdef USE_ACCELEROMETER
-      char _rotationLabels[3][14] = { "Standard", "Inverted", "Accelerometer" };
-      #else
-      char _rotationLabels[2][9] = { "Standard", "Inverted" };
-      #endif
-
+      char _rotationLabels[3][30] = { "Standard", "Inverted", "Accelerometer (if applicable)" };
       char _pinLabels[2][8] = { "Not Set", "Pin Set" };
     public:
       void show();

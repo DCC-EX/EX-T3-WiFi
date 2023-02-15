@@ -35,10 +35,11 @@ const uint8_t ENCODER_A = A0;
 
 TFT_eSPI tft;
 GT911 ts;
-#if defined(USE_ACCELEROMETER)
-DFRobot_LIS2DW12_I2C acce;
-DFRobot_LIS2DW12::eOrient_t lastOrientation = DFRobot_LIS2DW12::eOrient_t::eYDown;
-#endif
+struct {
+  bool enabled = false;
+  DFRobot_IIS2DLPC_I2C inst;
+  DFRobot_LIS2DW12::eOrient_t last = DFRobot_LIS2DW12::eOrient_t::eYDown;
+} acce;
 
 Encoder* encoder;
 uint32_t encoderPressMillis = 0;
@@ -260,11 +261,9 @@ void powerCheck(void*) {
 
 void setRotation() {
   bool standard = Settings.rotation == SettingsClass::Rotation::STANDARD;
-  #if defined(USE_ACCELEROMETER)
   if (Settings.rotation == SettingsClass::Rotation::ACCELEROMETER) {
-    standard = lastOrientation == DFRobot_LIS2DW12::eOrient_t::eYDown;
+    standard = acce.enabled ? acce.last == DFRobot_LIS2DW12::eOrient_t::eYDown : true;
   }
-  #endif
 
   UI::tft->setRotation(standard ? 2 : 0);
   ts.setRotation(standard ? GT911::Rotate::_180 : GT911::Rotate::_0);
@@ -290,9 +289,9 @@ void setup() {
   // Load the settings
   Settings.load();
   Settings.addEventListener(SettingsClass::Event::ROTATION_CHANGE, [](void*) {
-    #if defined(USE_ACCELEROMETER)
-    lastOrientation = acce.getOrientation();
-    #endif
+    if (acce.enabled) {
+      acce.last = acce.inst.getOrientation();
+    }
     setRotation();    
   });
 
@@ -317,18 +316,18 @@ void setup() {
     ts.writeConfig();
   }
 
-  #if defined(USE_ACCELEROMETER)
   // Start the accelerometer
-  acce.begin();
-  acce.softReset();
-  acce.setRange(DFRobot_LIS2DW12::e2_g);
-  acce.setPowerMode(DFRobot_LIS2DW12::eContLowPwrLowNoise1_12bit);
-  acce.setDataRate(DFRobot_LIS2DW12::eRate_200hz);
-  acce.set6DThreshold(DFRobot_LIS2DW12::eDegrees60);
-  acce.setInt1Event(DFRobot_LIS2DW12::e6D);
-  delay(25);
-  lastOrientation = acce.getOrientation();
-  #endif
+  if (acce.inst.begin()) {
+    acce.inst.softReset();
+    acce.inst.setRange(DFRobot_LIS2DW12::e2_g);
+    acce.inst.setPowerMode(DFRobot_LIS2DW12::eContLowPwrLowNoise1_12bit);
+    acce.inst.setDataRate(DFRobot_LIS2DW12::eRate_200hz);
+    acce.inst.set6DThreshold(DFRobot_LIS2DW12::eDegrees60);
+    acce.inst.setInt1Event(DFRobot_LIS2DW12::e6D);
+    delay(25);
+    acce.enabled = true;
+    acce.last = acce.inst.getOrientation();
+  }
 
   // Setup encoder
   pinMode(ENCODER_BTN, INPUT);
@@ -492,16 +491,13 @@ void loop() {
   } else if (encoderBtnState == UI::Encoder::ButtonState::RELEASED && millis() - encoderPressMillis < 1000) { // Encoder pressed for less than 1 second
     encoderBtnState = UI::Encoder::ButtonState::IDLE;
     activeUI->handleEncoderPress(UI::Encoder::ButtonPress::SHORT);
-  }
-  #if defined(USE_ACCELEROMETER)
-  else if (Settings.rotation == SettingsClass::Rotation::ACCELEROMETER && activeUI != nullptr) {
-    DFRobot_LIS2DW12::eOrient_t orientation = acce.getOrientation();
-    if (orientation != lastOrientation && (orientation == DFRobot_LIS2DW12::eYDown || orientation == DFRobot_LIS2DW12::eYUp)) {
-      lastOrientation = orientation;
+  } else if (Settings.rotation == SettingsClass::Rotation::ACCELEROMETER && activeUI != nullptr && acce.enabled) {
+    DFRobot_LIS2DW12::eOrient_t orientation = acce.inst.getOrientation();
+    if (orientation != acce.last && (orientation == DFRobot_LIS2DW12::eYDown || orientation == DFRobot_LIS2DW12::eYUp)) {
+      acce.last = orientation;
       setRotation();
     }
   }
-  #endif
 
   uiHeader->handleTasks();
   activeUI->handleTasks();
