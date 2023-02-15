@@ -18,9 +18,7 @@ class SettingsClass : public Events {
     struct Rotation {
       static constexpr uint8_t STANDARD = 0;
       static constexpr uint8_t INVERTED = 1;
-      #if defined(USE_ACCELEROMETER)
       static constexpr uint8_t ACCELEROMETER = 2;
-      #endif
     };
 
     uint8_t rotation = Rotation::STANDARD;

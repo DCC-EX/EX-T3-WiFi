@@ -81,11 +81,7 @@ void SettingsUI::Page2::show() {
 
   _ui.addElement<Button>(0, 70, 320, 42, _rotationLabels[Settings.rotation])
     ->onRelease([this](void* parameter) {
-      #ifdef USE_ACCELEROMETER
       if (++Settings.rotation > 2) {
-      #else
-      if (++Settings.rotation > 1) {
-      #endif
         Settings.rotation = 0;
       }
 
