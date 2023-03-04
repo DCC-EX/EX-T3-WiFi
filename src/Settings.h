@@ -86,12 +86,13 @@ class SettingsClass : public Events {
         friend class SettingsClass::LocoUI;
 
         struct Action {
-          static constexpr uint8_t KEYPAD = 0;
-          static constexpr uint8_t NAME = 1;
-          static constexpr uint8_t GROUP = 2;
-          static constexpr uint8_t NEXT = 3;
-          static constexpr uint8_t PREV = 4;
-          static constexpr uint8_t RELEASE = 5;
+          static constexpr uint8_t NONE = 0;
+          static constexpr uint8_t KEYPAD = 1;
+          static constexpr uint8_t NAME = 2;
+          static constexpr uint8_t GROUP = 3;
+          static constexpr uint8_t NEXT = 4;
+          static constexpr uint8_t PREV = 5;
+          static constexpr uint8_t RELEASE = 6;
         };
 
         uint8_t up = Action::RELEASE;
