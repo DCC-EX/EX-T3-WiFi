@@ -48,31 +48,31 @@ void SettingsUI::Page1::show() {
   _ui.addElement<Label>(0, 133, 130, 18, "Swipe Up:");
   _ui.addElement<Button>(170, 119, 150, 42, _swipActionLabels[Settings.LocoUI.Swipe.up])
     ->onRelease([this](void* parameter) {
-      swipeAction(parameter, Settings.LocoUI.Swipe.up, 5);
+      swipeAction(parameter, Settings.LocoUI.Swipe.up, 6);
     });
 
   _ui.addElement<Label>(0, 182, 130, 18, "Swipe Down:");
   _ui.addElement<Button>(170, 168, 150, 42, _swipActionLabels[Settings.LocoUI.Swipe.down])
     ->onRelease([this](void* parameter) {
-      swipeAction(parameter, Settings.LocoUI.Swipe.down, 5);
+      swipeAction(parameter, Settings.LocoUI.Swipe.down, 6);
     });
 
   _ui.addElement<Label>(0, 231, 130, 18, "Swipe Left:");
   _ui.addElement<Button>(170, 217, 150, 42, _swipActionLabels[Settings.LocoUI.Swipe.left])
     ->onRelease([this](void* parameter) {
-      swipeAction(parameter, Settings.LocoUI.Swipe.left, 5);
+      swipeAction(parameter, Settings.LocoUI.Swipe.left, 6);
     });
 
   _ui.addElement<Label>(0, 280, 130, 18, "Swipe Right:");
   _ui.addElement<Button>(170, 266, 150, 42, _swipActionLabels[Settings.LocoUI.Swipe.right])
     ->onRelease([this](void* parameter) {
-      swipeAction(parameter, Settings.LocoUI.Swipe.right, 5);
+      swipeAction(parameter, Settings.LocoUI.Swipe.right, 6);
     });
 
   _ui.addElement<Label>(0, 329, 130, 18, "After Swipe Release:");
   _ui.addElement<Button>(170, 315, 150, 42, _swipActionLabels[Settings.LocoUI.Swipe.release])
     ->onRelease([this](void* parameter) {
-      swipeAction(parameter, Settings.LocoUI.Swipe.release, 4);
+      swipeAction(parameter, Settings.LocoUI.Swipe.release, 5);
     });
 }
 

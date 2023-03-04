@@ -19,7 +19,7 @@ class SettingsUI : public UI {
       using Page::Page;
 
       char _speedStepLabels[3][2] = { "1", "2", "4" };
-      char _swipActionLabels[6][12] = { "Keypad", "Loco Names", "Loco Groups", "Next Loco", "Prev Loco", "Release" };
+      char _swipActionLabels[7][12] = { "None", "Keypad", "Loco Names", "Loco Groups", "Next Loco", "Prev Loco", "Release" };
 
       void swipeAction(void* button, uint8_t& gesture, uint8_t actions);
     public:
