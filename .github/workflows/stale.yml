@@ -20,7 +20,7 @@ jobs:
     steps:
     - uses: actions/stale@v7
       with:
-        exempt-issue-labels: 'enhancement,work-in-progress'
+        exempt-issue-labels: 'enhancement,work in progress'
         stale-issue-message: 'This issue is stale because it has been open 60 days with no activity. Remove stale label or comment or this will be closed in 7 days.'
         stale-pr-message: 'This PR is stale because it has been open 60 days with no activity. Remove stale label or comment or this will be closed in 7 days.'
         close-issue-message: 'This issue was closed because it has been stale for 7 days with no activity.'
