@@ -3,7 +3,7 @@ Refer to [Throttle setup](/docs/setup.md).
 
 # Managing Locos
 
-Click the green **+** icon to add a new loco config.
+Click the green **+** icon to add a new loco config or click the pencil icon on an existing loco to edit it.
 
 <p align="center">
   <img src="imgs/new-loco.png" width="450">
@@ -133,3 +133,10 @@ You can expand/collapse a group to show the locos by clicking the arrow icons.
 You can upload your own icons to use with the function buttons.
 
 These need to be 24bit bitmaps with max dimensions of 30x30.
+
+# Downloading/Uploading configs
+Configs for locos, function sets and groups can be downloaded and uploaded.
+An individual loco/function config can be downloaded by clicking the download icon to the left on the list.\
+You can download all loco/function configs by clicking the download icon at the top of the list.\
+Upload loco/function configs by clicking the upload icon at the top of the list, you can select single or multiple files to upload.\
+(**Warning, Uploaded configs with the same addresses/names will overwrite any existing**).

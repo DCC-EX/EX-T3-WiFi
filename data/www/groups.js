@@ -252,6 +252,27 @@ export default {
     },
     dragEnd() {
       this.lock();
+    },
+    upload({ target }) {
+      const file = target.files[0];
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const groups = JSON.parse(reader.result);
+        if (file.name === 'groups.json' && Array.isArray(groups)) { // Basic validation
+          const response = await fetch('/groups.json', {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: reader.result,
+          });
+          
+          if (response.ok) {
+            this.load();
+          }
+        }
+      };
+      reader.readAsText(file);
     }
   },
   template: `
@@ -270,6 +291,17 @@ export default {
             </div>
           </div>
           <div class="col-auto">
+            <a download href="/groups.json" class="btn btn-link text-primary p-0" title="Download group config">
+              <svg width="32" height="32" fill="currentColor">
+                <use xlink:href="bs.icons.svg#download"/>
+              </svg>
+            </a>
+            <label class="btn btn-link text-primary p-0" title="Upload group config">
+              <svg width="32" height="32" fill="currentColor">
+                <use xlink:href="bs.icons.svg#upload"/>
+              </svg>
+              <input @change="upload" type="file" accept="application/json" class="d-none" />
+            </label>
             <button @click="addGroup" class="btn btn-link text-success p-0">
               <svg width="64" height="64" fill="currentColor">
                 <use xlink:href="bs.icons.svg#plus-lg"/>
@@ -300,7 +332,7 @@ export default {
                 </span>
               </div>
               <div class="col pe-0">
-                <input v-model="groups[groupIndex].name" type="text" class="form-control form-control-sm" maxlength="20" required placeholder="Group Name" />
+                <input v-model="groups[groupIndex].name" @input="lock" type="text" class="form-control form-control-sm" maxlength="20" required placeholder="Group Name" />
               </div>
               <div class="col-auto d-flex align-items-center ps-auto">
                 <button @click="groups[groupIndex].expand = true" v-if="!expand" class="btn btn-link p-0 d-flex align-items-center">
