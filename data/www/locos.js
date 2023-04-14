@@ -167,6 +167,11 @@ export default {
       ],
     }
   },
+  computed: {
+    sorted() {
+      return this.locos.sort((a, b) => a.file.match(/(\d+)/)[0] - b.file.match(/(\d+)/)[0]);
+    }
+  },
   methods: {
     async load() {
       {
@@ -202,6 +207,54 @@ export default {
         this.locos.push(loco);
       }
     },
+    download() {
+      const a = document.createElement('a');
+
+      (function next(locos) {
+        const loco = locos.shift();
+        fetch(loco)
+          .then(result => result.blob())
+          .then(data => {
+            a.href = window.URL.createObjectURL(data);
+            a.download = loco.match(/[^/]+$/i)[0];
+            a.click();
+            window.URL.revokeObjectURL(a.href);
+            
+            if (locos.length) {
+              next(locos);
+            }
+          });
+      })([...this.locos].map(loco => loco.file));
+    },
+    upload({ target }) {
+      let next;
+      (next = files => {
+        const file = files.shift();
+        const reader = new FileReader();
+        reader.onload = async () => {
+          const { name, functions } = JSON.parse(reader.result);
+          if (name && functions && /^\d+\./.test(file.name) && parseInt(file.name) <= 10293) { // Basic validation
+            const loco = `/locos/${file.name}`;
+            const response = await fetch(loco, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: reader.result,
+            });
+            
+            if (response.ok) {
+              this.update({ file: loco, name });
+            }
+          }
+          if (files.length) {
+            next(files);
+          }
+        };
+        reader.readAsText(file);
+      })([...target.files]);
+      target.value = '';
+    },
   },
   template: `
   <div>
@@ -219,7 +272,18 @@ export default {
             </div>
           </div>
           <div class="col-auto">
-            <button @click="add" type="button" class="btn btn-link text-success p-0">
+            <label @click="download" class="btn btn-link text-primary p-0" title="Download all loco configs">
+              <svg width="32" height="32" fill="currentColor">
+                <use xlink:href="bs.icons.svg#download"/>
+              </svg>
+            </label>
+            <label class="btn btn-link text-primary p-0" title="Upload loco configs">
+              <svg width="32" height="32" fill="currentColor">
+                <use xlink:href="bs.icons.svg#upload"/>
+              </svg>
+              <input @change="upload" type="file" accept="application/json" multiple class="d-none" />
+            </label>
+            <button @click="add" type="button" class="btn btn-link text-success p-0" title="Add new loco">
               <svg width="64" height="64" fill="currentColor">
                 <use xlink:href="bs.icons.svg#plus-lg"/>
               </svg>
@@ -236,18 +300,25 @@ export default {
     <div class="row">
       <div class="col-md-5 mx-auto">
         <ul :class="{ loading: isLoading }" class="list-group list-group-flush">
-          <li v-for="loco of locos" :key="loco.file" class="list-group-item">
+          <li v-for="loco of sorted" :key="loco.file" class="list-group-item">
             <div class="row">
+              <div class="col-auto d-flex">
+                <a class="btn btn-link p-0 d-flex align-items-center" :href="loco.file" download title="Download loco config">
+                  <svg width="16" height="16" fill="currentColor">
+                    <use xlink:href="bs.icons.svg#download"/>
+                  </svg>
+                </a>
+              </div>
               <div class="col-3 col-md-2">#{{ loco.file.match(/\\d+/i)[0] }}</div>
               <div class="col">{{ loco.name }}</div>
               <div class="col-auto d-flex flex-nowrap">
-                <button @click="edit(loco)" class="btn btn-link p-0 d-flex align-items-center">
+                <button @click="edit(loco)" class="btn btn-link p-0 d-flex align-items-center" title="Edit loco config">
                   <svg width="16" height="16" fill="currentColor">
                     <use xlink:href="bs.icons.svg#pencil"/>
                   </svg>
                 </button>
                 &nbsp;&nbsp;
-                <button @click="del(loco)" type="button" class="btn btn-link p-0 d-flex align-items-center">
+                <button @click="del(loco)" type="button" class="btn btn-link p-0 d-flex align-items-center" title="Delete loco config">
                   <svg width="16" height="16" fill="currentColor">
                     <use xlink:href="bs.icons.svg#trash"/>
                   </svg>
