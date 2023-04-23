@@ -75,25 +75,23 @@ LocoUI::~LocoUI() {
 }
 
 void LocoUI::broadcast(void* parameter) {
-  _tasks.push_back([this, broadcast = *static_cast<DCCExCS::Loco*>(parameter)] {
-    if (broadcast.address == _loco.address) { // Broadcast for loco we're currently controlling
-      if (broadcast.speed != _loco.speed) {
+  auto broadcast = *static_cast<DCCExCS::Loco*>(parameter);
+  if (_loco.address == broadcast.address) { // Broadcast for loco we're currently controlling
+    _tasks.push_back([this, loco = _loco, broadcast] {
+      if (loco.speed != broadcast.speed) {
         _labelSpeed->setLabel(String(broadcast.speed));
-        _loco.speed = broadcast.speed;
       }
-      if (broadcast.direction != _loco.direction) {
+      if (loco.direction != broadcast.direction) {
         _labelDirection->setLabel(broadcast.direction ? "Forward" : "Reverse");
-        _loco.direction = broadcast.direction;
       }
-      if (_loco.functions == UINT32_MAX) { // First load
-        _loco.functions = broadcast.functions;
+      if (loco.functions == UINT32_MAX) { // First load
         createFunctionButtons();
-      } else if (broadcast.functions != _loco.functions) {
-        toggleFunctionButtons(broadcast.functions);
-        _loco.functions = broadcast.functions;
+      } else if (loco.functions != broadcast.functions) {
+        toggleFunctionButtons(loco.functions ^ broadcast.functions);
       }
-    }
-  });
+    });
+    _loco = broadcast;
+  }
 }
 
 void LocoUI::createFunctionButtons() {
@@ -172,9 +170,9 @@ void LocoUI::toggleFunctionButtons(std::bitset<32> toggle) {
     if (!paging || divideAndCeil(++i, 7) == _page) {
       for (JsonObjectConst const& fn : row) {
         uint8_t func = fn["fn"];
-        if ((fn["latching"] | true) && _loco.functions.test(func) != toggle.test(func) && btnIndex < btnCount) {
+        if ((fn["latching"] | true) && toggle.test(func) && btnIndex < btnCount) {
           static_cast<Button*>(_elements[btnIndex].get())
-            ->setState(toggle.test(func) ? Button::State::PRESSED : Button::State::IDLE);
+            ->setState(_loco.functions.test(func) ? Button::State::PRESSED : Button::State::IDLE);
         }
         btnIndex++;
       }
@@ -183,21 +181,21 @@ void LocoUI::toggleFunctionButtons(std::bitset<32> toggle) {
 }
 
 bool LocoUI::encoderRotate(Encoder::Rotation rotation) {
-  uint8_t step;
+  int8_t step = rotation == Encoder::Rotation::CW ? 1 : -1;
   switch (Settings.LocoUI.speedStep) {
-    case SettingsClass::LocoUI::SpeedStep::STEP_1: {
-      step = 1;
-    } break;
     case SettingsClass::LocoUI::SpeedStep::STEP_2: {
-      step = 2;
+      step *= 2;
     } break;
     case SettingsClass::LocoUI::SpeedStep::STEP_4: {
-      step = 4;
+      step *= 4;
     } break;
   }
 
-  int16_t speed = _loco.speed + (rotation == Encoder::Rotation::CW ? step : -step);
-  _dccExCS.setLocoThrottle(_loco.address, max<int16_t>(min<int16_t>(speed, 126), 0), _loco.direction);
+  int8_t speed = max<int16_t>(min<int16_t>(_loco.speed + step, 126), 0);
+  if (speed != _antiFlood) { // As we wait for the CS response to update the speed we don't send again until it updates.
+    _antiFlood = speed;
+    _dccExCS.setLocoThrottle(_loco.address, speed, _loco.direction);
+  }
 
   return true;
 }

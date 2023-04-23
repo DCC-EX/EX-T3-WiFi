@@ -56,6 +56,7 @@ class DCCExCS : public Events {
       Loco(uint16_t address, uint8_t speedCode, uint32_t functions)
           : address(address), speed(max(0, (speedCode & 0x7F) - 1)),
             direction((speedCode & 0x80) == 128), functions(functions) { }
+      Loco(const Loco& loco) : address(loco.address), speed(loco.speed), direction(loco.direction), functions(loco.functions) { }
     };
 
     DCCExCS(AsyncClient& csClient);
