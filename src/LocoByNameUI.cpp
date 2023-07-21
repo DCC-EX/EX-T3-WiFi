@@ -57,7 +57,7 @@ void LocoByNameUI::drawPagingAndButtons() {
   uint8_t count = _btnsDoc.size();
 
   if (count > 8) { // If there's more than 8 buttons we need paging
-    uint8_t pages = divideAndCeil(count, 8);
+    uint8_t pages = divideAndCeil(count, 7);
     auto paging = addComponent<Paging>(pages);
     paging->addEventListener(Paging::Event::CHANGED, [this](void* parameter) {
       destroyButtons();
