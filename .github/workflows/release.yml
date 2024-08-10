@@ -23,8 +23,8 @@ jobs:
     - name: Build PlatformIO project
       run: pio run --target buildrelease
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: build-artifact
-        path: firmware.bin
+    - name: Upload Release Assets
+      run: |
+        gh release upload ${{ github.ref }} firmware.bin
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
