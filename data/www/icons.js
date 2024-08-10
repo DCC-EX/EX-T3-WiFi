@@ -129,7 +129,7 @@ export default {
               <div class="col d-flex align-items-center">
                 {{ icon.file.match(/([^\\/]*).bmp$/i)[1] }}
               </div>
-              <div class="col-auto d-flex align-items-center">
+              <div v-if="!icon.file.startsWith('/$/')" class="col-auto d-flex align-items-center">
                 <button @click="del(icon)" type="button" class="btn btn-link p-0 d-flex align-items-center">
                   <svg width="16" height="16" fill="currentColor">
                     <use xlink:href="bs.icons.svg#trash"/>

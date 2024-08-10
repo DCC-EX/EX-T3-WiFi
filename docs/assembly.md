@@ -4,15 +4,10 @@
 
 ## Before starting assembly
 
-Start by copying the contents of the `sd` folder to the MicroSD card and insert into the display. This is easier to do now while access is still easy.
-> * The files in the `/sd` directory should not exceed 4GB or 8GB in size; however a 16GB MicroSD card should work well.
-> * The MicroSD card needs to be FAT32 formatted before the files contained in the `/sd` directory are copied to it.
-> * After copying the `/sd` directory contents to the MicroSD card it should contain the file `default.json` and a directory named `icons` (which contains the icons for the Touchscreen use). e.g\
-`D:\default.json`\
-`D:\icons\bulb-off.bmp`\
-`D:\icons\bulb-on.bmp`\
-etc.\
-Where `D:\` is the MicroSD card.
+This step is easier to do now while access is still easy.\
+The MicroSD card needs to be inserted into the display.\
+_The MicroSD card needs to be FAT32 formatted but the throttle is able to format the card if it can't be mounted.\
+The format option is provided when the throttle is powered on and unable to mount the card._
 
 ## Case
 The case is made of 5 3D printed parts which are needed for assembly.

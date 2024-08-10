@@ -30,7 +30,8 @@ class MenuUI : public UI, public Events {
       POWER_ON_PROG,
       POWER_JOIN,
       WIFI,
-      SETTINGS
+      SETTINGS,
+      ABOUT
     };
   private:
     DCCExCS& _dccExCS;

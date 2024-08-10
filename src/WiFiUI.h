@@ -11,10 +11,13 @@ class WiFiUI : public UI {
     DNSServer dns;
     ThrottleServer server;
 
+    wifi_event_id_t _ipGotHandler;
+    wifi_event_id_t _ipDisconnectedHandler;
     uint16_t _updatedHandler;
 
     Label* _labelSSID;
     Label* _labelPassword;
+    Label* _labelIP;
     Label* _labelServer;
     Label* _labelPort;
     Label* _labelScan;

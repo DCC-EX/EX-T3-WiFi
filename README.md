@@ -7,7 +7,7 @@
 #
 ### ⚠ Please note before deciding to buy parts this has been a solo project and may have unknown bugs and require some tinkering, please report any issues on GitHub ⚠
 
-### 🛈 Visual Studio Code and PlatformIO are required 🛈
+### 🛈 To upload the code you'll need a Chromium based web browser (Chrome, Opera, Edge) or Visual Studio Code and PlatformIO 🛈
 
 #
 
@@ -32,10 +32,11 @@
 
 #
 - [Assembly](/docs/assembly.md)
-- [Uploading the code](/docs/code.md)
-- [Throttle setup](/docs/setup.md)
-- [Managing locos](/docs/locos.md)
-- [Throttle menu](/docs/menu.md)
-- [Throttle settings](/docs/settings.md)
+- [Web Browser Uploading](/docs/browser.md)
+- [VSCode Uploading](/docs/code.md)
+- [Throttle Setup](/docs/setup.md)
+- [Managing Locos](/docs/locos.md)
+- [Throttle Menu](/docs/menu.md)
+- [Throttle Settings](/docs/settings.md)
 - [Running Locos](/docs/running.md)
 - [Decoder Programming](/docs/programming.md)
