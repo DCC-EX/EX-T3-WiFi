@@ -7,7 +7,7 @@
 #include <qrcode_espi.h>
 
 WiFiUI::WiFiUI() {
-  _elements.reserve(11);
+  _elements.reserve(13);
 
   WiFi.mode(WIFI_AP_STA);
   WiFi.softAP(Settings.AP.SSID.c_str(), Settings.AP.password.c_str());
@@ -15,11 +15,23 @@ WiFiUI::WiFiUI() {
   dns.start(53, Settings.AP.SSID.c_str(), WiFi.softAPIP());
   server.begin();
 
+  _ipGotHandler = WiFi.onEvent([this](WiFiEvent_t event, WiFiEventInfo_t info) {
+    _tasks.push_back([this] {
+      _labelIP->setLabel(String("IP: ") += WiFi.localIP().toString());
+    });
+  }, ARDUINO_EVENT_WIFI_STA_GOT_IP);
+
+  _ipDisconnectedHandler = WiFi.onEvent([this](WiFiEvent_t event, WiFiEventInfo_t info) {
+    _tasks.push_back([this] {
+      _labelIP->setLabel("IP: Not Connected");
+    });
+  }, ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
+
   _updatedHandler = Settings.addEventListener(SettingsClass::Event::CS_CHANGE, [this](void* parameter) {
     updated(parameter == nullptr && _child == nullptr);
   });
 
-  addElement<Header>(0, 40, 320, 18, "CS Settings");
+  addElement<Header>(0, 40, 320, 18, "WiFi Settings");
 
   _labelSSID = addElement<Label>(0, 67, 320, 18, "", true);
   _labelSSID->onRelease([this](void*) {
@@ -27,32 +39,42 @@ WiFiUI::WiFiUI() {
       Settings.CS.SSID(value);
     });
   });
+
   _labelPassword = addElement<Label>(0, 94, 320, 18, "", true);
   _labelPassword->onRelease([this](void*) {
     keyboard("Password", "", [](const String &value) {
       Settings.CS.password(value);
     });
   });
-  _labelServer = addElement<Label>(0, 121, 320, 18, "", true);
+
+  _labelIP = addElement<Label>(0, 121, 320, 18, "IP: Not Connected", true);
+  if (WiFi.isConnected()) {
+    _labelIP->setLabel(String("IP: ") += WiFi.localIP().toString());
+  }
+
+  addElement<Header>(0, 148, 320, 18, "CS Settings");
+
+  _labelServer = addElement<Label>(0, 175, 320, 18, "", true);
   _labelServer->onRelease([this](void*) {
     keyboard("Server", Settings.CS.server(), [](const String &value) {
       Settings.CS.server(value);
     });
   });
-  _labelPort = addElement<Label>(0, 148, 320, 18, "", true);
+
+  _labelPort = addElement<Label>(0, 202, 320, 18, "", true);
   _labelPort->onRelease([this](void*) {
     keypad("Port", Settings.CS.port(), [](uint16_t value) {
       Settings.CS.port(value);
     });
   });
 
-  addElement<Header>(0, 175, 320, 18, "Throttle AP Settings");
+  addElement<Header>(0, 229, 320, 18, "Throttle AP Settings");
 
-  addElement<Label>(0, 202, 320, 18, String("SSID: ") += Settings.AP.SSID, true);
-  addElement<Label>(0, 229, 320, 18, String("Password: ") += Settings.AP.password, true);
-  addElement<Label>(0, 256, 320, 18, String("http://") += Settings.AP.SSID, true);
+  addElement<Label>(0, 256, 320, 18, String("SSID: ") += Settings.AP.SSID, true);
+  addElement<Label>(0, 283, 320, 18, String("Password: ") += Settings.AP.password, true);
+  addElement<Label>(0, 310, 320, 18, String("http://") += Settings.AP.SSID, true);
 
-  _labelScan = addElement<Label>(0, 283, 320, 18, "", true);
+  _labelScan = addElement<Label>(0, 337, 320, 18, "", true);
 
   addElement<Label>(0, 460, 320, 18, "Swipe left/right for AP/http:// QR code", true);
 
@@ -66,6 +88,8 @@ WiFiUI::~WiFiUI() {
   dns.stop();
   server.end();
 
+  WiFi.removeEvent(_ipGotHandler);
+  WiFi.removeEvent(_ipDisconnectedHandler);
   Settings.removeEventListener(SettingsClass::Event::CS_CHANGE, _updatedHandler);
 }
 
@@ -79,7 +103,7 @@ void WiFiUI::redraw() {
 
 void WiFiUI::drawQR() {
   TFT_eSprite qr(UI::tft);
-  qr.createSprite(132, 132);
+  qr.createSprite(76, 76);
   QRcode_eSPI qrcode(&qr);
   qrcode.init();
   if (_alternateQR) {
@@ -94,7 +118,7 @@ void WiFiUI::drawQR() {
   } else {
     qrcode.create(String("http://") += Settings.AP.SSID);
   }
-  qr.pushSprite(94, 312);
+  qr.pushSprite(122, 369);
 }
 
 bool WiFiUI::swipe(Swipe swipe) {

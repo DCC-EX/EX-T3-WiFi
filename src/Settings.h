@@ -1,6 +1,7 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
+#include <Version.h>
 #include <Events.h>
 #if __has_include(<ThrottleWiFiSettings.h>)
 // TODO, deprecate
@@ -21,12 +22,15 @@ class SettingsClass : public Events {
       static constexpr uint8_t ACCELEROMETER = 2;
     };
 
+    uint32_t version = 0;
     uint8_t rotation = Rotation::STANDARD;
     uint32_t pin = 0;
     uint16_t emergencyStop = 2000;
 
     void load();
     void save();
+    void init();
+    void upgrade(JsonDocument& doc);
 
     struct AP {
       friend class SettingsClass;
@@ -35,8 +39,8 @@ class SettingsClass : public Events {
       String password;
 
       private:
-        void load(const JsonObject &obj);
-        void save(const JsonObject &obj); 
+        void load(const JsonObject& obj);
+        void save(const JsonObject& obj); 
     } AP;
 
     struct CS {
@@ -45,13 +49,13 @@ class SettingsClass : public Events {
       bool valid();
 
       String SSID() const;
-      bool SSID(const String &value);
+      bool SSID(const String& value);
 
       String password() const;
-      bool password(const String &value);
+      bool password(const String& value);
 
       String server() const;
-      bool server(const String &value);
+      bool server(const String& value);
 
       uint16_t port() const;
       void port(uint16_t value);
@@ -67,8 +71,8 @@ class SettingsClass : public Events {
         String _server = "dccex";
         uint16_t _port = 2560;
 
-        void load(const JsonObject &obj);
-        void save(const JsonObject &obj);
+        void load(const JsonObject& obj);
+        void save(const JsonObject& obj);
     } CS;
 
     struct LocoUI {
@@ -103,13 +107,13 @@ class SettingsClass : public Events {
         uint8_t release = Action::KEYPAD;
 
         private:
-          void load(const JsonObject &obj);
-          void save(const JsonObject &obj);  
+          void load(const JsonObject& obj);
+          void save(const JsonObject& obj);  
       } Swipe;
 
       private:
-        void load(const JsonObject &obj);
-        void save(const JsonObject &obj);
+        void load(const JsonObject& obj);
+        void save(const JsonObject& obj);
     } LocoUI;
 };
 

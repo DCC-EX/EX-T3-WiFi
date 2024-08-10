@@ -3,7 +3,7 @@
 #include <Elements/Button.h>
 
 MenuUI::MenuUI(DCCExCS& dccExCS, DCCExCS::Power& power) : _dccExCS(dccExCS), _power(power) {
-  _elements.reserve(17);
+  _elements.reserve(18);
   _broadcastPowerHandler = dccExCS.addEventListener(DCCExCS::Event::BROADCAST_POWER, [this](void*) {
     _tasks.push_back([this] {
       _powerAll->setState(_power.main && _power.prog ? Btn::State::PRESSED : Btn::State::IDLE);
@@ -82,14 +82,19 @@ MenuUI::MenuUI(DCCExCS& dccExCS, DCCExCS::Power& power) : _dccExCS(dccExCS), _po
 
   addElement<Header>(0, 390, 320, 18, "Settings");
 
-  addElement<Btn>(0, 420, 157, 42, "T3 WiFi")
+  addElement<Btn>(0, 420, 102, 42, "T3 WiFi")
     ->onRelease([this](void*) {
       selected(Button::WIFI);
     });
 
-  addElement<Btn>(163, 420, 157, 42, "Settings")
+  addElement<Btn>(109, 420, 102, 42, "Settings")
     ->onRelease([this](void*) {
       selected(Button::SETTINGS);
+    });
+
+  addElement<Btn>(218, 420, 102, 42, "About")
+    ->onRelease([this](void*) {
+      selected(Button::ABOUT);
     });
 }
 

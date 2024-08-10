@@ -10,13 +10,12 @@ When on the **T3 WiFi** display you can touch any of the **CS Settings** labels 
 
 You can also connect to the throttles own WiFi and website (**AP Settings**) where you can enter the **CS Settings**.
 
-<p align="center">
-  <img src="imgs/throttle-server.png" width="300">
-</p>
-
-## CS Settings
+## WiFi Settings
 * SSID - The SSID of the WiFi network the CS is on *(Touch to show a keyboard)*.
 * Password - The WiFi network password, if set *(Touch to show a keyboard)*.
+* IP: The IP given to the throttle by the WiFi network.
+
+## CS Settings
 * Server - The CS server address. This can be a hostname or IP *(Touch to show a keyboard)*.
 * Port - The CS port *(Touch to show a keypad)*.
 

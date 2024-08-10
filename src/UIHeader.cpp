@@ -5,7 +5,7 @@ UIHeader::UIHeader() {
   _wifi = addElement<Image>(70, 0, 30, 30, SPIFFS);
   _cs = addElement<Image>(110, 0, 30, 30, SPIFFS);
 
-  addElement<Image>(150, 0, 30, 30, "/icons/conductor.bmp", SPIFFS);
+  addElement<Image>(150, 0, 30, 30, "/header/conductor.bmp", SPIFFS);
   _locos = addElement<Label>(180, 10, 100, 18);
 
   updatePowerStatus();
@@ -14,7 +14,7 @@ UIHeader::UIHeader() {
   updateLocoCount();
 
   addElement<Button>(290, 0, 30, 30, Button::Appearance {
-    "/icons/menu.bmp",
+    "/header/menu.bmp",
     SPIFFS
   })->onRelease([this](void*) {
     dispatchEvent(Event::MENU);
@@ -23,15 +23,15 @@ UIHeader::UIHeader() {
 
 void UIHeader::updatePowerStatus() {
   if (_powerStatus == PowerStatus::STATUS_CHARGING) { // If we can detect charging in the future
-    _power->setImage("/icons/battery-charging.bmp");
+    _power->setImage("/header/battery-charging.bmp");
   } else if (_powerStatus == PowerStatus::STATUS_HIGH) {
-    _power->setImage("/icons/battery-full.bmp");
+    _power->setImage("/header/battery-full.bmp");
   } else if (_powerStatus == PowerStatus::STATUS_MEDIUM) {
-    _power->setImage("/icons/battery-medium.bmp");
+    _power->setImage("/header/battery-medium.bmp");
   } else if (_powerStatus == PowerStatus::STATUS_LOW) {
-    _power->setImage("/icons/battery-low.bmp");
+    _power->setImage("/header/battery-low.bmp");
   } else if (_powerStatus == PowerStatus::STATUS_RECHARGE) {
-    _power->setImage("/icons/battery-recharge.bmp");
+    _power->setImage("/header/battery-recharge.bmp");
   }
 }
 
@@ -53,8 +53,8 @@ void UIHeader::setPowerStatus(float voltage) {
 
 void UIHeader::updateWiFiStatus() {
   _wifi->setImage(_wifiStatus
-    ? "/icons/wifi-connected.bmp"
-    : "/icons/wifi-disconnected.bmp");
+    ? "/header/wifi-connected.bmp"
+    : "/header/wifi-disconnected.bmp");
 }
 
 void UIHeader::setWiFiStatus(bool connected) {
@@ -68,8 +68,8 @@ void UIHeader::setWiFiStatus(bool connected) {
 
 void UIHeader::updateCSStatus() {
   _cs->setImage(_csStatus
-    ? "/icons/cs-connected.bmp"
-    : "/icons/cs-disconnected.bmp");
+    ? "/header/cs-connected.bmp"
+    : "/header/cs-disconnected.bmp");
 }
 
 void UIHeader::setCSStatus(bool connected) {

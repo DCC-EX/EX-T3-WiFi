@@ -43,7 +43,7 @@ LocoUI::LocoUI(DCCExCS& dccExCS, uint16_t address) : _dccExCS(dccExCS), _loco(ad
   } else {
     File functionFile;
     if (!_locoDoc.containsKey("functions") || !(functionFile = SD.open(_locoDoc["functions"].as<const char*>()))) { // Name of function map file
-      functionFile = SD.open("/default.json");
+      functionFile = SPIFFS.open("/default.json");
     }
 
     StaticJsonDocument<16> filter;
@@ -67,6 +67,8 @@ LocoUI::LocoUI(DCCExCS& dccExCS, uint16_t address) : _dccExCS(dccExCS), _loco(ad
     });
   }
 
+  createFunctionButtons();
+
   _dccExCS.acquireLoco(address);
 }
 
@@ -84,13 +86,12 @@ void LocoUI::broadcast(void* parameter) {
       if (loco.direction != broadcast.direction) {
         _labelDirection->setLabel(broadcast.direction ? "Forward" : "Reverse");
       }
-      if (loco.functions == UINT32_MAX) { // First load
-        createFunctionButtons();
-      } else if (loco.functions != broadcast.functions) {
+      if (loco.functions != broadcast.functions) {
         toggleFunctionButtons(loco.functions ^ broadcast.functions);
       }
     });
     _loco = broadcast;
+    _speedPending = false;
   }
 }
 
@@ -115,12 +116,24 @@ void LocoUI::createFunctionButtons() {
         uint8_t func = fn["fn"];
 
         auto appearance = [](JsonObjectConst obj) -> Button::Appearance {
+          const char* icon = obj["icon"].as<const char*>();
+          if (strncmp(icon, "/$/", 3) == 0) {
+            return {
+              obj["label"].as<const char*>(),
+              obj["color"].as<uint16_t>(),
+              obj["fill"].as<uint16_t>(),
+              obj["border"].as<uint16_t>(),
+              icon + 2,
+              SPIFFS
+            };
+          }
+
           return {
             obj["label"].as<const char*>(),
             obj["color"].as<uint16_t>(),
             obj["fill"].as<uint16_t>(),
             obj["border"].as<uint16_t>(),
-            obj["icon"].as<const char*>()
+            icon
           };
         };
 
@@ -181,6 +194,10 @@ void LocoUI::toggleFunctionButtons(std::bitset<32> toggle) {
 }
 
 bool LocoUI::encoderRotate(Encoder::Rotation rotation) {
+  if (_speedPending) {
+    return true;
+  }
+
   int8_t step = rotation == Encoder::Rotation::CW ? 1 : -1;
   switch (Settings.LocoUI.speedStep) {
     case SettingsClass::LocoUI::SpeedStep::STEP_2: {
@@ -190,13 +207,13 @@ bool LocoUI::encoderRotate(Encoder::Rotation rotation) {
       step *= 4;
     } break;
   }
-
+  
   int8_t speed = max<int16_t>(min<int16_t>(_loco.speed + step, 126), 0);
-  if (speed != _antiFlood) { // As we wait for the CS response to update the speed we don't send again until it updates.
-    _antiFlood = speed;
+  if (speed != _loco.speed) {
+    _speedPending = true;
     _dccExCS.setLocoThrottle(_loco.address, speed, _loco.direction);
   }
-
+  
   return true;
 }
 

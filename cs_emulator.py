@@ -4,7 +4,18 @@ import re
 import time
 from threading import Thread
 
+sockets = []
+
+def broadcast(msg):
+  for s in sockets:
+    try:
+      s.send(msg)
+    except:
+      sockets.remove(s)
+
 def throttle(c: socket):
+  sockets.append(c)
+  
   while True:
     data = c.recv(1024)
     if not data:
@@ -53,12 +64,10 @@ def throttle(c: socket):
         continue
       case "t":
         r = re.search("<t (?P<l>\d+) (?P<s>\d+) (?P<d>\d+)>", cmd)
-        # r = re.search("<t (?P<l>\d+)>", str)
         if r:
           s = "<l " + r.group("l") + " 0 " + str((int(r.group("s")) + 1 & 0x7F) + int(r.group("d")) * 128) + " 0>\n"
           print(">> " + s)
-          c.send(bytes(s, "raw_unicode_escape"))
-          # c.send(bytes("<T " + r.group("l") + " " + r.group("s") + " " + r.group("d") + ">\n", "raw_unicode_escape"))
+          broadcast(bytes(s, "raw_unicode_escape"))
         else:
           c.send(b"<l 1 1 0 1>\n")
         continue

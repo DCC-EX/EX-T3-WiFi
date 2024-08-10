@@ -10,7 +10,7 @@
 class DCCExCS : public Events {
   private:
     AsyncClient& _csClient;
-    TaskHandle_t _timeout;
+    TimerHandle_t _timeout;
 
     struct {
       const char* match;
@@ -22,10 +22,24 @@ class DCCExCS : public Events {
   public:
     struct Event {
       static constexpr uint8_t TIMEOUT = 0;
-      static constexpr uint8_t BROADCAST_LOCO = 1;
-      static constexpr uint8_t BROADCAST_POWER = 2;
-      static constexpr uint8_t PROGRAM_READ = 3;
-      static constexpr uint8_t PROGRAM_WRITE = 4;
+      static constexpr uint8_t VERSION = 1;
+      static constexpr uint8_t BROADCAST_LOCO = 2;
+      static constexpr uint8_t BROADCAST_POWER = 3;
+      static constexpr uint8_t PROGRAM_READ = 4;
+      static constexpr uint8_t PROGRAM_WRITE = 5;
+    };
+
+    struct Version {
+      String version;
+      String board;
+      String shield;
+      String build;
+
+      Version() { }
+      Version(String& version, String& board, String& shield, String& build)
+        : version(version), board(board), shield(shield), build(build) { }
+      Version(const char* version, const char* board, const char* shield, const char* build)
+        : version(version), board(board), shield(shield), build(build) { }
     };
 
     struct Power {
@@ -50,7 +64,7 @@ class DCCExCS : public Events {
       uint8_t direction;
       std::bitset<32> functions;
       Loco(uint16_t address)
-          : address(address), speed(UINT8_MAX), direction(UINT8_MAX), functions(UINT32_MAX) { }
+          : address(address), speed(UINT8_MAX), direction(UINT8_MAX), functions(0) { }
       Loco(uint16_t address, uint8_t speed, bool direction, uint32_t functions)
           : address(address), speed(speed), direction(direction), functions(functions) { }
       Loco(uint16_t address, uint8_t speedCode, uint32_t functions)
@@ -63,6 +77,8 @@ class DCCExCS : public Events {
 
     void handleCS(uint8_t* data, uint16_t size);
     
+    void getCSVersion();
+
     void getCSPower();
     void setCSPower(uint8_t power, bool state);
 

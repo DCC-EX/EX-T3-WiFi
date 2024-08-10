@@ -6,7 +6,4 @@
 include/ThrottleWiFiSettings.h
 3d/*.x3g
 3d/*.f3d
-sd/settings.json
-sd/locos/*
-sd/fns/*
-sd/groups.json
+sd

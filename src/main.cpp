@@ -6,7 +6,6 @@
 #include <GT911.h>
 #include <DFRobot_LIS2DW12.h>
 #undef ERR_OK // Needed as the DFRobot_LIS2DW12.h header has an unused define that conflicts
-#include <Encoder.h>
 #include <WiFi.h>
 #include <AsyncTCP.h>
 #include <Settings.h>
@@ -17,12 +16,14 @@
 #include <Children/Keypad.h>
 #include <Children/MessageBox.h>
 #include <Children/Pin.h>
+#include <SDCardUI.h>
 #include <MenuUI.h>
 #include <WiFiUI.h>
+#include <SettingsUI.h>
+#include <AboutUI.h>
 #include <ProgramUI.h>
 #include <LocoUI.h>
 #include <LocoByNameUI.h>
-#include <SettingsUI.h>
 
 const uint32_t POWER_CHECK = 60000 * 2; // 2 Minutes
 const uint8_t BATTERY_PIN = A2;
@@ -41,10 +42,11 @@ struct {
   DFRobot_LIS2DW12::eOrient_t last = DFRobot_LIS2DW12::eOrient_t::eYDown;
 } acce;
 
-Encoder* encoder;
+volatile uint8_t encoderLastEncoded = 0;
+volatile int8_t encoderCurrentValue = 0;
 uint32_t encoderPressMillis = 0;
 UI::Encoder::ButtonState encoderBtnState = UI::Encoder::ButtonState::IDLE;
-uint8_t currentEncoderPinState, lastEncoderPinState;
+uint8_t encoderCurrentPinState, encoderLastPinState;
 
 AsyncClient csClient;
 uint8_t csBuffer[1024];
@@ -218,10 +220,39 @@ void setMenuUI() {
             };
           });
         } break;
+        case MenuUI::Button::ABOUT: {
+          setUI = [] {
+            return std::make_unique<AboutUI>(dccExCS);
+          };
+        } break;
       }
     });
     return ui;
   };
+}
+
+void IRAM_ATTR updateEncoderValue() {
+  uint8_t MSB = digitalRead(ENCODER_A);
+  uint8_t LSB = digitalRead(ENCODER_B);
+
+  uint8_t encoded = (MSB << 1) | LSB;
+  uint8_t sum  = (encoderLastEncoded << 2) | encoded;
+
+  switch (sum) {
+    case 0b1101:
+    case 0b0100:
+    case 0b0010:
+    case 0b1011: {
+      encoderCurrentValue++;
+    } break;
+    case 0b1110:
+    case 0b0111:
+    case 0b0001:
+    case 0b1000:
+      encoderCurrentValue--;
+  }
+
+  encoderLastEncoded = encoded;
 }
 
 // Based off the helpful blog post here, https://savjee.be/2020/02/esp32-keep-wifi-alive-with-freertos-task/
@@ -284,16 +315,6 @@ void setup() {
   while (!SD.begin(D7) && tries-- > 0) {
     delay(100);
   }
-  // TODO, if we fail to start file system then restart?
-
-  // Load the settings
-  Settings.load();
-  Settings.addEventListener(SettingsClass::Event::ROTATION_CHANGE, [](void*) {
-    if (acce.enabled) {
-      acce.last = acce.inst.getOrientation();
-    }
-    setRotation();    
-  });
 
   // Start the TFT display
   UI::tft = &tft;
@@ -331,13 +352,39 @@ void setup() {
 
   // Setup encoder
   pinMode(ENCODER_BTN, INPUT);
-  // TODO, fork encoder and break out with begin method? need to construct here as the class constructor tries to set pins before the ESP32 is ready
-  encoder = new Encoder(ENCODER_B, ENCODER_A);
+  pinMode(ENCODER_A, INPUT_PULLUP);
+  pinMode(ENCODER_B, INPUT_PULLUP);
+  attachInterrupt(ENCODER_A, updateEncoderValue, CHANGE);
+  attachInterrupt(ENCODER_B, updateEncoderValue, CHANGE);
+
+  // Load the settings
+  Settings.load();
+
+  // Set initial rotation
+  setRotation();
+
+  // Unable to mount SD card
+  if (SD.cardType() == CARD_NONE) {
+    setUI = [] {
+      return std::make_unique<SDCardUI>();
+    };
+
+    return;
+  }
+
+  // Rotation settings change
+  Settings.addEventListener(SettingsClass::Event::ROTATION_CHANGE, [](void*) {
+    if (acce.enabled) {
+      acce.last = acce.inst.getOrientation();
+    }
+    setRotation();    
+  });
 
   // Setup the WiFi
   WiFi.setHostname(Settings.AP.SSID.c_str());
   WiFi.persistent(false);
   WiFi.mode(WIFI_STA);
+  WiFi.setSleep(false);
   
   // WiFi connected
   WiFi.onEvent([](WiFiEvent_t event, WiFiEventInfo_t info) {
@@ -397,8 +444,6 @@ void setup() {
   xTaskCreatePinnedToCore(powerCheck, "powerCheck", 1024, NULL, 1, NULL, 1);
   xTaskCreatePinnedToCore(keepWiFiAlive, "keepWiFiAlive", 2048, NULL, 1, NULL, 1);
 
-  // Set initial rotation before any display output
-  setRotation();
   // Create UI Header
   uiHeader = std::make_unique<UIHeader>();
   uiHeader->addEventListener(UIHeader::Event::MENU, [](void*) {
@@ -424,18 +469,18 @@ void loop() {
   }
 
   // Encoder press
-  currentEncoderPinState = digitalRead(ENCODER_BTN);
-  if (currentEncoderPinState != lastEncoderPinState) {
+  encoderCurrentPinState = digitalRead(ENCODER_BTN);
+  if (encoderCurrentPinState != encoderLastPinState) {
     if (millis() - encoderPressMillis > 50) { // Debounce
-      if (currentEncoderPinState == LOW && encoderBtnState == UI::Encoder::ButtonState::IDLE) { // Press
+      if (encoderCurrentPinState == LOW && encoderBtnState == UI::Encoder::ButtonState::IDLE) { // Press
         encoderBtnState = UI::Encoder::ButtonState::PRESSED;
-      } else if (currentEncoderPinState == HIGH && encoderBtnState == UI::Encoder::ButtonState::PRESSED) { // Release
+      } else if (encoderCurrentPinState == HIGH && encoderBtnState == UI::Encoder::ButtonState::PRESSED) { // Release
         encoderBtnState = UI::Encoder::ButtonState::RELEASED;
       }
     }
     encoderPressMillis = millis();
   }
-  lastEncoderPinState = currentEncoderPinState;
+  encoderLastPinState = encoderCurrentPinState;
 
   uint8_t touches = ts.touched(GT911_MODE_POLLING);
   if (touches) {
@@ -443,7 +488,7 @@ void loop() {
     GTPoint points[touches];
     memcpy(points, ts.getPoints(), touches * sizeof(GTPoint));
     // If menu press
-    if (!uiHeader->handleTouch(touches, points, [] {
+    if (uiHeader == nullptr || !uiHeader->handleTouch(touches, points, [] {
       return ts.touched(GT911_MODE_POLLING);
     })) {
       // Attempt to detect swipe
@@ -478,12 +523,12 @@ void loop() {
         activeUI->handleSwipe(swipe);
       }
     }
-  } else if (encoder->read() >= 4) {
+  } else if (encoderCurrentValue >= 3) {
+    encoderCurrentValue = 0;
     activeUI->handleEncoderRotate(UI::Encoder::Rotation::CW);
-    encoder->write(0);
-  } else if (encoder->read() <= -4) {
+  } else if (encoderCurrentValue <= -3) {
+    encoderCurrentValue = 0;
     activeUI->handleEncoderRotate(UI::Encoder::Rotation::CCW);
-    encoder->write(0);
   } else if (encoderBtnState == UI::Encoder::ButtonState::PRESSED && millis() - encoderPressMillis > Settings.emergencyStop) { // Encoder pressed and held for set duration
     encoderBtnState = UI::Encoder::ButtonState::IDLE;
     dccExCS.emergencyStopAll(); // Stop all locos
@@ -499,7 +544,10 @@ void loop() {
     }
   }
 
-  uiHeader->handleTasks();
+  if (uiHeader != nullptr) {
+    uiHeader->handleTasks();
+  }
+
   activeUI->handleTasks();
   activeUI->handleLoop();
 

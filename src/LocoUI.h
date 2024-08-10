@@ -15,8 +15,8 @@ class LocoUI : public UI, public Events {
   private:
     DCCExCS& _dccExCS;
     DCCExCS::Loco _loco;
-    uint8_t _broadcastLocoHandler;
-    int8_t _antiFlood = 0;
+    uint16_t _broadcastLocoHandler;
+    bool _speedPending = false;
 
     Label* _labelSpeed;
     Label* _labelDirection;
