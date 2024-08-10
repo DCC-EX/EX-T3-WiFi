@@ -25,6 +25,6 @@ jobs:
 
     - name: Upload Release Assets
       run: |
-        gh release upload ${{ github.ref }} firmware.bin
+        gh release upload $GITHUB_REF firmware.bin
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
