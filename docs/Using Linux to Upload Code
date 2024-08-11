@@ -1,0 +1,96 @@
+# Using Linux to Upload Code
+
+ **Contributed by Dave Clifford - 2023-03-29**
+
+Linux can be used in creating a EX-T3-WiFi throttle to build/upload the file system image as well as build/upload the FireBeetle 2 control program.
+
+This guide defines a process and steps to install/check installation of the tools needed to to communicate from the Linux system to the Fire Beetle 2 and check user permissions to use the tools.
+
+## Hardware to Be Used
+
+The FireBeetle 2 ESP32-E IoT Microcontroller with Header (FireBeetle 2) (DFRobot SKU:DFR0654-F) communicates to an external wired device via a USB C to USB C (or USB A) interface cable.
+
+**NOTE: USB C cables can have variations in speed, power, and protocol capabilities. A USB C cable with 3.1 Gen 2 capabilities vs one with 2.0 can mean a vast difference in data transfer.**
+
+The FireBeetle 2 ESP32-E USB to UART interface chip used to do this communication is the CH340K (vendor is identified as QinHeng Electronics).
+
+## Checking If The USB Driver is Installed
+
+The Linux operating system communicates with internal and external devices via an extensive set of drivers provided by the kernel.
+
+The current Linux driver providing the signal and control for the CH340K USB Bridge Controller is the CH341 driver.
+
+The Linux Kernel V5 Series has ch341.ko driver support.
+
+A search in a new (2023-03-25) Linux system kernel shows the CH341 USB serial driver is installed in
+
+     $ find /lib/* -type f -name "*ch341.ko"
+
+    /lib/modules/5.19.0-38-generic/kernel/drivers/usb/serial/ch341.ko
+
+If the developer plugs in the FireBeetle 2 to a USB port and then uses the terminal window command,
+
+     $ lsusb -t 
+
+he should see an output stream showing that the ch341 driver is attached to a USB port, similar to
+
+   ==> Port 2: Dev 7, If 0, Class=Vendor Specific Class, Driver=ch341, 12M
+
+This establishes that the driver is defined in the kernel and loaded for use.
+
+This **does NOT establish** that the user has permission to use the driver.
+
+## Setting User Permissions to Use The CH341 USB Driver
+
+There are two steps to take to set permissions for the user to use the USB port to transfer the code to the FireBeetle 2.
+
+### The first step is to enable TTY Ports for use.
+
+Linux has an extensive security system to lock every port and requires the user to add controls to open ports for use.
+
+Linux users need to install Udev Rules for PlatformIO supported boards/devices.
+
+The latest version of the rules may be found at [99-platformio-udev.rules] (https://raw.githubusercontent.com/platformio/platformio-core/develop/platformio/assets/system/99-platformio-udev.rules).
+The instructions are thorough and use a curl command string for installing to your Linux system.
+
+### The second step is to add the user to the dialout Group.
+
+The dialout group membership provides full and direct access to serial ports. Members of this group can reconfigure the modem, dial anywhere, etc.
+
+       sudo adduser $USER dialout
+
+ The adduser command will add you [$USER] to the dialout group which controls access to the serial ports.
+
+ The port my system uses is /dev/ttyUSB0 and is defined within the dialout group.
+
+## Install Visual Studio Code for Linux
+
+ Visual Studio Code for Linux should be able to be installed using the package installer that come with your distribution.
+.
+The package name is **code** and the version that was installed is **version 1.76.2-1678817801**.
+
+## Install the PlatformIO IDE Extension within Visual Studio Code for Linux
+
+Startup the Code application. Search for Extensions and add the PlatformIO IDE.
+
+My installed version is v3.1.1.
+
+**NOTE: The startup time is 223 seconds.**
+
+## Modify Your Linux Shell File to Define the USB Port To Be Used To Upload the Builds
+
+ Your shell file resides in your home directory and defines the tools, formats, parameters, etc. to be used while the session is active of your shell.
+
+ My Linux distribution use the bash shell, so my shell file is  named **.bashrc.**
+
+ In order to communicate with the FireBeetle 2 through the PlatformIO upload port, I had to add a port definition to the .bashrc file.
+ This will define the port at the user session level, not at the application level.
+
+       export PLATFORMIO_UPLOAD_PORT=/dev/ttyUSB0
+
+ [Don't add a port definition to the platformio.ini within the EX-T3-WiFi .git tree! I discovered that GIT saw my discrepancy and wanted me to promote the change!]
+
+ The user is achieving the same solution (by using the user session resource file) - defining the upload port to be used for PlatformIO - but is not affecting the integrity of the git package.
+
+I hope this road map helps you to successfully build/upload your EX-T3-WiFi throttle software!
+
