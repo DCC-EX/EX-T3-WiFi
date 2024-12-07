@@ -329,13 +329,7 @@ void setup() {
   // TODO, screen standby? can it remember buffer
 
   // Start the touchscreen
-  if (ts.begin()) {
-    // Tweak the touchscreen borders
-    GTConfig* cfg = ts.readConfig();
-    cfg->hSpace = (5 | (5 << 4));
-    cfg->vSpace = (5 | (5 << 4));
-    ts.writeConfig();
-  }
+  ts.begin();
 
   // Start the accelerometer
   if (acce.inst.begin()) {
@@ -357,20 +351,23 @@ void setup() {
   attachInterrupt(ENCODER_A, updateEncoderValue, CHANGE);
   attachInterrupt(ENCODER_B, updateEncoderValue, CHANGE);
 
-  // Load the settings
-  Settings.load();
-
-  // Set initial rotation
-  setRotation();
-
   // Unable to mount SD card
   if (SD.cardType() == CARD_NONE) {
+    UI::tft->setRotation(2);
+    ts.setRotation(GT911::Rotate::_180);
+
     setUI = [] {
       return std::make_unique<SDCardUI>();
     };
 
     return;
   }
+
+  // Load the settings
+  Settings.load();
+
+  // Set initial rotation
+  setRotation();
 
   // Rotation settings change
   Settings.addEventListener(SettingsClass::Event::ROTATION_CHANGE, [](void*) {
