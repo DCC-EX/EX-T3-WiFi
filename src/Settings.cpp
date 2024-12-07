@@ -3,10 +3,6 @@
 #include <Functions.h>
 
 void SettingsClass::load() {
-  if (SD.cardType() == CARD_NONE) {
-    return;
-  }
-
   File json = SD.open("/settings.json");
   StaticJsonDocument<2048> doc;
   DeserializationError error = deserializeJson(doc, json);
