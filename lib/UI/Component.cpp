@@ -2,9 +2,9 @@
 
 void Component::redraw() { }
 
-bool Component::touch(uint8_t count, GTPoint* points) { return false; }
+bool Component::touch(TOUCHINFO& ti) { return false; }
 
-bool Component::release(uint8_t count, GTPoint* points) { return false; }
+bool Component::release(TOUCHINFO& ti) { return false; }
 
 bool Component::encoderRotate(Encoder::Rotation rotation) { return false; }
 

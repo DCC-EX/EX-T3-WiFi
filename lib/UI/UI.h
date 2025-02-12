@@ -3,7 +3,7 @@
 
 #include <Arduino.h>
 #include <TFT_eSPI.h>
-#include <GT911.h>
+#include <bb_captouch.h>
 #include <Component.h>
 
 #include <vector>
@@ -34,7 +34,7 @@ class UI : public Component {
     virtual ~UI() = default;
 
     void handleRedraw();
-    bool handleTouch(uint8_t count, GTPoint* points, std::function<bool()> touched);
+    bool handleTouch(TOUCHINFO& ti, std::function<bool()> touched);
     void handleEncoderRotate(Encoder::Rotation rotation);
     void handleEncoderPress(Encoder::ButtonPress press);
     void handleSwipe(Swipe swipe);

@@ -2,7 +2,7 @@
 #define COMPONENT_H
 
 #include <Arduino.h>
-#include <GT911.h>
+#include <bb_captouch.h>
 #include <Element.h>
 
 #include <vector>
@@ -42,8 +42,8 @@ class Component {
     }
 
     virtual void redraw();
-    virtual bool touch(uint8_t count, GTPoint* points);
-    virtual bool release(uint8_t count, GTPoint* points);
+    virtual bool touch(TOUCHINFO& ti);
+    virtual bool release(TOUCHINFO& ti);
     virtual bool encoderRotate(Encoder::Rotation rotation);
     virtual bool encoderPress(Encoder::ButtonPress press);
     virtual bool swipe(Swipe swipe);

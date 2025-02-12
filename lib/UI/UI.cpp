@@ -21,10 +21,10 @@ void UI::handleRedraw() {
   }
 }
 
-bool UI::handleTouch(uint8_t count, GTPoint* points, std::function<bool()> touched) {
-  auto touchElements = [&points](auto& elements, auto method) -> bool {
+bool UI::handleTouch(TOUCHINFO& ti, std::function<bool()> touched) {
+  auto touchElements = [&ti](auto& elements, auto method) -> bool {
     for (const auto& ptr : elements) {
-      if (ptr->contains(points[0].x, points[0].y)) {
+      if (ptr->contains(ti.x[0], ti.y[0])) {
         std::invoke(method, ptr, ptr.get());
         return true;
       }
@@ -45,12 +45,12 @@ bool UI::handleTouch(uint8_t count, GTPoint* points, std::function<bool()> touch
   };
 
   if (_child != nullptr) {
-    return _child->handleTouch(count, points, touched);
-  } else if (touch(count, points) || handleTouchMethod(&Touch::touched)) {
+    return _child->handleTouch(ti, touched);
+  } else if (touch(ti) || handleTouchMethod(&Touch::touched)) {
     while (touched()) {
       delay(25);
     }
-    return release(count, points) || handleTouchMethod(&Touch::released);
+    return release(ti) || handleTouchMethod(&Touch::released);
   }
 
   return false;

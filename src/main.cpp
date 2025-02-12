@@ -3,7 +3,7 @@
 #include <SD.h>
 #include <SPI.h>
 #include <TFT_eSPI.h>
-#include <GT911.h>
+#include <bb_captouch.h>
 #include <DFRobot_LIS2DW12.h>
 #undef ERR_OK // Needed as the DFRobot_LIS2DW12.h header has an unused define that conflicts
 #include <WiFi.h>
@@ -35,7 +35,7 @@ const uint8_t ENCODER_B = A1;
 const uint8_t ENCODER_A = A0;
 
 TFT_eSPI tft;
-GT911 ts;
+BBCapTouch ts;
 struct {
   bool enabled = false;
   DFRobot_IIS2DLPC_I2C inst;
@@ -297,7 +297,7 @@ void setRotation() {
   }
 
   UI::tft->setRotation(standard ? 2 : 0);
-  ts.setRotation(standard ? GT911::Rotate::_180 : GT911::Rotate::_0);
+  ts.setOrientation(standard ? 180 : 0, 320, 480);
 
   if (activeUI != nullptr) {
     UI::tft->fillScreen(TFT_BLACK);
@@ -329,7 +329,7 @@ void setup() {
   // TODO, screen standby? can it remember buffer
 
   // Start the touchscreen
-  ts.begin();
+  ts.init(21, 22);
 
   // Start the accelerometer
   if (acce.inst.begin()) {
@@ -354,7 +354,7 @@ void setup() {
   // Unable to mount SD card
   if (SD.cardType() == CARD_NONE) {
     UI::tft->setRotation(2);
-    ts.setRotation(GT911::Rotate::_180);
+    ts.setOrientation(180, 320, 480);
 
     setUI = [] {
       return std::make_unique<SDCardUI>();
@@ -456,6 +456,18 @@ void setup() {
   setMenuUI();
 }
 
+bool getTouchSamples(TOUCHINFO* ti) {
+  uint32_t timeout = millis() + 20;
+  do {
+    if (ts.getSamples(ti)) {
+      return true;
+    }
+    delay(1);
+  } while (millis() < timeout);
+
+  return false;
+}
+
 void loop() {
   if (setUI != nullptr) {
     isMenu = false; // Any new UI resets this
@@ -479,32 +491,31 @@ void loop() {
   }
   encoderLastPinState = encoderCurrentPinState;
 
-  uint8_t touches = ts.touched(GT911_MODE_POLLING);
-  if (touches) {
-    // Remember the original touch points so we can use later calls to check for swipes
-    GTPoint points[touches];
-    memcpy(points, ts.getPoints(), touches * sizeof(GTPoint));
+  TOUCHINFO ti;
+  if (getTouchSamples(&ti)) {
     // If menu press
-    if (uiHeader == nullptr || !uiHeader->handleTouch(touches, points, [] {
-      return ts.touched(GT911_MODE_POLLING);
+    if (uiHeader == nullptr || !uiHeader->handleTouch(ti, [] {
+      TOUCHINFO tmp;
+      return getTouchSamples(&tmp);
     })) {
       // Attempt to detect swipe
       UI::Swipe swipe = UI::Swipe::NONE;
       delay(5);
       uint32_t timeout = millis() + 150;
-      while (millis() < timeout && ts.touched(GT911_MODE_POLLING)) {
-        GTPoint p = ts.getPoint(0);
-        if (points[0].y - p.y > GESTURE_DISTANCE) {
+      TOUCHINFO tsw;
+      while (millis() < timeout && getTouchSamples(&tsw)) {
+        if (ti.y[0] - tsw.y[0] > GESTURE_DISTANCE) {
           swipe = UI::Swipe::UP;
-        } else if (p.y - points[0].y > GESTURE_DISTANCE) {
+        } else if (tsw.y[0] - ti.y[0] > GESTURE_DISTANCE) {
           swipe = UI::Swipe::DOWN;
-        } else if (points[0].x - p.x > GESTURE_DISTANCE) {
+        } else if (ti.x[0] - tsw.x[0] > GESTURE_DISTANCE) {
           swipe = UI::Swipe::LEFT;
-        } else if (p.x - points[0].x > GESTURE_DISTANCE) {
+        } else if (tsw.x[0] - ti.x[0] > GESTURE_DISTANCE) {
           swipe = UI::Swipe::RIGHT;
         }
         if (swipe != UI::Swipe::NONE) {
-          while (ts.touched(GT911_MODE_POLLING)) {
+          TOUCHINFO tmp;
+          while (getTouchSamples(&tmp)) {
             delay(10);
           }
           break;
@@ -512,8 +523,9 @@ void loop() {
       }
 
       if (swipe == UI::Swipe::NONE) {
-        activeUI->handleTouch(touches, points, [] {
-          return ts.touched(GT911_MODE_POLLING);
+        activeUI->handleTouch(ti, [] {
+          TOUCHINFO tmp;
+          return getTouchSamples(&tmp);
         });
         Serial.println(ESP.getFreeHeap());
       } else {
